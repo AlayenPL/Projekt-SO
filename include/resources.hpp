@@ -2,7 +2,6 @@
 
 #include <condition_variable>
 #include <mutex>
-#include <semaphore>
 #include <string>
 
 #include "logger.hpp"
@@ -17,6 +16,13 @@ static inline const char* dir_str(Direction d) {
     }
     return "?";
 }
+
+// Uwaga dot. VIP:
+// - Bridge (A): VIP NIE omija kolejki (w specyfikacji VIP czeka jak inni).
+// - Tower (B) i Ferry (C): VIP omija kolejkę -> implementujemy kolejkę z priorytetem VIP.
+//
+// Dodatkowo wprowadzamy prostą "fairness": po wpuszczeniu VIP określoną liczbę razy z rzędu,
+// jeśli czekają normalni, wpuszczamy normalnego, by uniknąć głodzenia.
 
 struct Bridge {
     int cap;
@@ -37,7 +43,15 @@ struct Tower {
     int cap;
     Logger& log;
 
-    std::counting_semaphore<> sem;
+    std::mutex mu;
+    std::condition_variable cv;
+
+    int inside = 0;
+    int waiting_vip = 0;
+    int waiting_norm = 0;
+
+    int vip_streak = 0;
+    static constexpr int VIP_BURST = 5; // po tylu VIP z rzędu wpuszczamy normalnego (jeśli czeka)
 
     Tower(int cap, Logger& log);
 
@@ -49,7 +63,15 @@ struct Ferry {
     int cap;
     Logger& log;
 
-    std::counting_semaphore<> sem;
+    std::mutex mu;
+    std::condition_variable cv;
+
+    int onboard = 0;
+    int waiting_vip = 0;
+    int waiting_norm = 0;
+
+    int vip_streak = 0;
+    static constexpr int VIP_BURST = 5;
 
     Ferry(int cap, Logger& log);
 
