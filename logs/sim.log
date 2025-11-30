@@ -1,591 +1,515 @@
 t=0ms MAIN START
 t=0ms CASHIER START
 t=0ms GUIDE START guide=0
-t=0ms GUIDE START guide=1
 t=0ms TOURIST ARRIVE id=1 age=13 vip=1
-t=0ms CASHIER ENTER id=1
+t=0ms GUIDE START guide=1
+t=0ms CASHIER ENTER id=1 age=13 vip=1 count=1/60 pay=0
 t=0ms VIP DENY_CHILD id=1 age=13 reason=NEEDS_GUARDIAN
-t=0ms TOURIST ARRIVE id=2 age=35 vip=0
-t=0ms CASHIER ENTER id=2
-t=6ms TOURIST ARRIVE id=3 age=31 vip=0
-t=6ms TOURIST ARRIVE id=4 age=0 vip=0
-t=6ms CASHIER ENTER id=3
-t=6ms CASHIER ENTER id=4
-t=6ms TOURIST ARRIVE id=5 age=71 vip=0
-t=6ms CASHIER ENTER id=5
-t=6ms TOURIST ARRIVE id=6 age=55 vip=1
-t=6ms CASHIER ENTER id=6
-t=13ms VIP START id=6 route=2
-t=13ms TOURIST ARRIVE id=7 age=65 vip=0
-t=13ms CASHIER ENTER id=7
-t=13ms TOURIST ARRIVE id=8 age=48 vip=1
-t=13ms CASHIER ENTER id=8
-t=13ms VIP START id=8 route=1
-t=18ms TOURIST ARRIVE id=9 age=24 vip=0
-t=18ms CASHIER ENTER id=9
-t=18ms TOURIST ARRIVE id=10 age=57 vip=0
-t=18ms CASHIER ENTER id=10
-t=18ms TOURIST GROUP_JOIN id=2 gid=100000 guide=1
-t=18ms TOURIST GROUP_JOIN id=3 gid=100000 guide=1
-t=18ms TOURIST GROUP_JOIN id=4 gid=100000 guide=1
-t=18ms TOURIST GROUP_JOIN id=5 gid=100000 guide=1
-t=18ms TOURIST GROUP_JOIN id=7 gid=100000 guide=1
-t=18ms GUIDE GROUP_START guide=1 gid=100000 route=1
-t=18ms TOURIST GROUP_JOIN id=9 gid=100000 guide=1
-t=18ms BRIDGE BRIDGE_DIR_SET dir=FWD
-t=18ms BRIDGE ENTER id=2 dir=FWD occ=1/4
-t=18ms BRIDGE ENTER id=3 dir=FWD occ=2/4
-t=18ms BRIDGE ENTER id=4 dir=FWD occ=3/4
-t=18ms BRIDGE ENTER id=5 dir=FWD occ=4/4
-t=18ms TOURIST ARRIVE id=11 age=6 vip=0
-t=18ms CASHIER ENTER id=11
-t=24ms TOURIST ARRIVE id=12 age=45 vip=1
-t=24ms CASHIER ENTER id=12
-t=24ms VIP START id=12 route=1
-t=29ms TOURIST ARRIVE id=13 age=30 vip=0
-t=29ms CASHIER ENTER id=13
-t=29ms TOURIST ARRIVE id=14 age=54 vip=0
-t=29ms CASHIER ENTER id=14
-t=29ms TOURIST ARRIVE id=15 age=41 vip=0
-t=29ms CASHIER ENTER id=15
-t=29ms TOURIST ARRIVE id=16 age=74 vip=0
-t=29ms CASHIER ENTER id=16
-t=29ms TOURIST GROUP_JOIN id=10 gid=0 guide=0
-t=29ms TOURIST GROUP_JOIN id=11 gid=0 guide=0
-t=29ms TOURIST GROUP_JOIN id=13 gid=0 guide=0
-t=29ms GUIDE GROUP_START guide=0 gid=0 route=1
-t=29ms TOURIST GROUP_JOIN id=14 gid=0 guide=0
-t=29ms TOURIST GROUP_JOIN id=15 gid=0 guide=0
-t=29ms TOURIST GROUP_JOIN id=16 gid=0 guide=0
-t=29ms TOURIST ARRIVE id=17 age=60 vip=1
-t=29ms CASHIER ENTER id=17
-t=34ms TOURIST ARRIVE id=18 age=27 vip=1
-t=34ms VIP START id=17 route=1
-t=34ms CASHIER ENTER id=18
-t=34ms VIP START id=18 route=1
-t=34ms TOURIST ARRIVE id=19 age=22 vip=0
-t=34ms CASHIER ENTER id=19
-t=39ms TOURIST ARRIVE id=20 age=68 vip=0
-t=39ms CASHIER ENTER id=20
-t=45ms TOURIST ARRIVE id=21 age=42 vip=0
-t=45ms TOURIST ARRIVE id=22 age=27 vip=0
-t=45ms CASHIER ENTER id=21
-t=45ms CASHIER ENTER id=22
-t=51ms TOURIST ARRIVE id=23 age=33 vip=0
-t=51ms CASHIER ENTER id=23
-t=56ms TOURIST ARRIVE id=24 age=4 vip=1
-t=56ms CASHIER ENTER id=24
-t=56ms VIP DENY_CHILD id=24 age=4 reason=NEEDS_GUARDIAN
-t=74ms TOURIST ARRIVE id=25 age=58 vip=0
-t=133ms CASHIER ENTER id=25
-t=133ms TOURIST ARRIVE id=26 age=53 vip=0
-t=133ms CASHIER ENTER id=26
-t=133ms TOURIST ARRIVE id=27 age=70 vip=0
-t=133ms CASHIER ENTER id=27
-t=189ms TOURIST ARRIVE id=28 age=27 vip=0
-t=189ms TOURIST ARRIVE id=29 age=58 vip=0
-t=189ms CASHIER ENTER id=28
-t=189ms CASHIER ENTER id=29
-t=195ms TOURIST ARRIVE id=30 age=61 vip=0
-t=195ms TOURIST ARRIVE id=31 age=72 vip=0
-t=195ms CASHIER ENTER id=30
-t=195ms CASHIER ENTER id=31
-t=200ms TOURIST ARRIVE id=32 age=56 vip=0
-t=200ms CASHIER ENTER id=32
-t=207ms TOURIST ARRIVE id=33 age=25 vip=0
-t=207ms CASHIER ENTER id=33
-t=291ms TOURIST ARRIVE id=34 age=27 vip=0
-t=403ms CASHIER ENTER id=34
-t=403ms TOURIST ARRIVE id=35 age=5 vip=1
-t=403ms TOURIST ARRIVE id=36 age=57 vip=0
-t=403ms CASHIER ENTER id=35
-t=403ms CASHIER ENTER id=36
-t=404ms VIP DENY_CHILD id=35 age=5 reason=NEEDS_GUARDIAN
-t=413ms TOURIST ARRIVE id=37 age=47 vip=0
-t=413ms CASHIER ENTER id=37
-t=418ms TOURIST ARRIVE id=38 age=31 vip=0
-t=418ms CASHIER ENTER id=38
-t=424ms TOURIST ARRIVE id=39 age=12 vip=0
-t=424ms CASHIER ENTER id=39
-t=431ms TOURIST ARRIVE id=40 age=63 vip=0
-t=431ms TOURIST ARRIVE id=41 age=66 vip=0
-t=431ms CASHIER ENTER id=40
-t=431ms CASHIER ENTER id=41
-t=446ms TOURIST ARRIVE id=42 age=52 vip=0
-t=446ms TOURIST ARRIVE id=43 age=58 vip=0
-t=446ms TOURIST ARRIVE id=44 age=33 vip=0
-t=446ms CASHIER ENTER id=42
-t=446ms CASHIER ENTER id=43
-t=446ms CASHIER ENTER id=44
-t=447ms TOURIST ARRIVE id=45 age=43 vip=0
-t=447ms CASHIER ENTER id=45
-t=461ms TOURIST ARRIVE id=46 age=43 vip=0
-t=461ms CASHIER ENTER id=46
-t=471ms TOURIST ARRIVE id=47 age=16 vip=0
-t=471ms CASHIER ENTER id=47
-t=473ms TOURIST ARRIVE id=48 age=22 vip=0
-t=573ms CASHIER ENTER id=48
-t=573ms BRIDGE LEAVE id=3 occ=3/4
-t=573ms BRIDGE ENTER id=7 dir=FWD occ=4/4
-t=630ms BRIDGE LEAVE id=4 occ=3/4
-t=630ms BRIDGE ENTER id=11 dir=FWD occ=4/4
-t=630ms TOURIST ARRIVE id=49 age=12 vip=0
-t=630ms CASHIER ENTER id=49
-t=630ms TOURIST ARRIVE id=50 age=12 vip=1
-t=630ms TOURIST ARRIVE id=51 age=74 vip=0
-t=631ms CASHIER ENTER id=50
-t=631ms CASHIER ENTER id=51
-t=631ms VIP DENY_CHILD id=50 age=12 reason=NEEDS_GUARDIAN
-t=660ms BRIDGE LEAVE id=2 occ=3/4
-t=660ms BRIDGE ENTER id=17 dir=FWD occ=4/4
-t=660ms TOURIST ARRIVE id=52 age=23 vip=0
-t=660ms CASHIER ENTER id=52
-t=718ms TOURIST ARRIVE id=53 age=57 vip=0
-t=718ms CASHIER ENTER id=53
-t=718ms TOURIST ARRIVE id=54 age=53 vip=0
-t=718ms CASHIER ENTER id=54
-t=726ms TOURIST ARRIVE id=55 age=34 vip=0
-t=726ms CASHIER ENTER id=55
-t=726ms TOURIST ARRIVE id=56 age=67 vip=0
-t=726ms CASHIER ENTER id=56
-t=726ms TOURIST ARRIVE id=57 age=71 vip=0
-t=726ms CASHIER ENTER id=57
-t=739ms TOURIST ARRIVE id=58 age=11 vip=0
-t=739ms CASHIER ENTER id=58
-t=739ms TOURIST ARRIVE id=59 age=61 vip=0
-t=739ms CASHIER ENTER id=59
-t=801ms TOURIST ARRIVE id=60 age=24 vip=0
-t=801ms CASHIER ENTER id=60
-t=801ms TOURIST ARRIVE id=61 age=32 vip=0
-t=801ms CASHIER REJECT id=61
-t=801ms TOURIST LEAVE_NO_ENTRY id=61
-t=815ms TOURIST ARRIVE id=62 age=31 vip=0
-t=815ms CASHIER REJECT id=62
-t=815ms TOURIST LEAVE_NO_ENTRY id=62
-t=815ms TOURIST ARRIVE id=63 age=22 vip=0
-t=815ms CASHIER REJECT id=63
-t=815ms TOURIST LEAVE_NO_ENTRY id=63
-t=815ms TOURIST ARRIVE id=64 age=31 vip=0
-t=815ms CASHIER REJECT id=64
-t=815ms TOURIST LEAVE_NO_ENTRY id=64
-t=815ms TOURIST ARRIVE id=65 age=51 vip=0
-t=815ms CASHIER REJECT id=65
-t=815ms TOURIST LEAVE_NO_ENTRY id=65
-t=844ms TOURIST ARRIVE id=66 age=49 vip=0
-t=844ms CASHIER REJECT id=66
-t=844ms TOURIST LEAVE_NO_ENTRY id=66
-t=844ms TOURIST ARRIVE id=67 age=69 vip=1
-t=911ms CASHIER REJECT id=67
-t=911ms TOURIST LEAVE_NO_ENTRY id=67
-t=911ms TOURIST ARRIVE id=68 age=22 vip=1
-t=911ms CASHIER REJECT id=68
-t=911ms TOURIST LEAVE_NO_ENTRY id=68
-t=990ms TOURIST ARRIVE id=69 age=19 vip=0
-t=990ms TOURIST ARRIVE id=70 age=69 vip=0
-t=990ms CASHIER REJECT id=69
-t=990ms CASHIER REJECT id=70
-t=990ms TOURIST LEAVE_NO_ENTRY id=69
-t=990ms BRIDGE LEAVE id=5 occ=3/4
-t=990ms TOURIST LEAVE_NO_ENTRY id=70
-t=990ms BRIDGE ENTER id=16 dir=FWD occ=4/4
-t=1060ms BRIDGE LEAVE id=7 occ=3/4
-t=1060ms TOURIST ARRIVE id=73 age=55 vip=0
-t=1060ms CASHIER REJECT id=73
-t=1060ms TOURIST LEAVE_NO_ENTRY id=73
-t=1060ms BRIDGE ENTER id=14 dir=FWD occ=4/4
-t=1060ms TOURIST ARRIVE id=72 age=3 vip=0
-t=1060ms CASHIER REJECT id=72
-t=1060ms TOURIST ARRIVE id=71 age=73 vip=0
-t=1060ms TOURIST LEAVE_NO_ENTRY id=72
-t=1060ms FERRY QUEUE_JOIN id=6 vip=1 dir=BWD wait_vip=1 wait_norm=0
-t=1060ms FERRY QUEUE_LEAVE id=6 vip=1 dir=BWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=1
-t=1060ms FERRY BOARD id=6 vip=1 dir=BWD occ=1/2
-t=1060ms CASHIER REJECT id=71
-t=1061ms TOURIST LEAVE_NO_ENTRY id=71
-t=1073ms TOURIST ARRIVE id=74 age=56 vip=0
-t=1073ms CASHIER REJECT id=74
-t=1073ms TOURIST LEAVE_NO_ENTRY id=74
-t=1079ms TOURIST ARRIVE id=75 age=32 vip=1
-t=1079ms CASHIER REJECT id=75
-t=1079ms TOURIST LEAVE_NO_ENTRY id=75
-t=1085ms TOURIST ARRIVE id=76 age=2 vip=0
-t=1085ms TOURIST ARRIVE id=77 age=1 vip=0
-t=1085ms CASHIER REJECT id=76
-t=1085ms CASHIER REJECT id=77
-t=1086ms TOURIST LEAVE_NO_ENTRY id=77
-t=1086ms TOURIST LEAVE_NO_ENTRY id=76
-t=1093ms TOURIST ARRIVE id=78 age=74 vip=0
-t=1093ms CASHIER REJECT id=78
-t=1093ms TOURIST LEAVE_NO_ENTRY id=78
-t=1099ms TOURIST ARRIVE id=79 age=60 vip=0
-t=1099ms CASHIER REJECT id=79
-t=1099ms TOURIST LEAVE_NO_ENTRY id=79
-t=1106ms TOURIST ARRIVE id=80 age=14 vip=0
-t=1106ms TOURIST ARRIVE id=81 age=60 vip=0
-t=1106ms CASHIER REJECT id=80
-t=1106ms CASHIER REJECT id=81
-t=1106ms TOURIST LEAVE_NO_ENTRY id=81
-t=1106ms TOURIST LEAVE_NO_ENTRY id=80
-t=1111ms TOURIST ARRIVE id=82 age=37 vip=0
-t=1111ms CASHIER REJECT id=82
-t=1111ms TOURIST LEAVE_NO_ENTRY id=82
-t=1116ms TOURIST ARRIVE id=83 age=19 vip=1
-t=1116ms TOURIST ARRIVE id=84 age=66 vip=0
-t=1116ms CASHIER REJECT id=83
-t=1116ms CASHIER REJECT id=84
-t=1116ms TOURIST LEAVE_NO_ENTRY id=83
-t=1116ms TOURIST LEAVE_NO_ENTRY id=84
-t=1121ms TOURIST ARRIVE id=85 age=41 vip=0
-t=1121ms CASHIER REJECT id=85
-t=1121ms TOURIST LEAVE_NO_ENTRY id=85
-t=1128ms TOURIST ARRIVE id=86 age=47 vip=0
-t=1128ms CASHIER REJECT id=86
-t=1128ms TOURIST LEAVE_NO_ENTRY id=86
-t=1135ms TOURIST ARRIVE id=87 age=52 vip=0
-t=1135ms TOURIST ARRIVE id=88 age=42 vip=0
-t=1135ms CASHIER REJECT id=87
-t=1135ms CASHIER REJECT id=88
-t=1135ms TOURIST LEAVE_NO_ENTRY id=87
-t=1135ms TOURIST LEAVE_NO_ENTRY id=88
-t=1140ms TOURIST ARRIVE id=89 age=34 vip=0
-t=1140ms CASHIER REJECT id=89
-t=1140ms TOURIST LEAVE_NO_ENTRY id=89
-t=1145ms TOURIST ARRIVE id=90 age=13 vip=0
-t=1145ms CASHIER REJECT id=90
-t=1145ms TOURIST LEAVE_NO_ENTRY id=90
-t=1152ms TOURIST ARRIVE id=91 age=13 vip=0
-t=1152ms TOURIST ARRIVE id=92 age=25 vip=0
-t=1152ms CASHIER REJECT id=91
-t=1152ms CASHIER REJECT id=92
-t=1152ms TOURIST LEAVE_NO_ENTRY id=91
-t=1152ms TOURIST LEAVE_NO_ENTRY id=92
-t=1159ms TOURIST ARRIVE id=93 age=8 vip=0
-t=1159ms CASHIER REJECT id=93
-t=1159ms TOURIST LEAVE_NO_ENTRY id=93
-t=1164ms TOURIST ARRIVE id=94 age=38 vip=0
-t=1164ms CASHIER REJECT id=94
-t=1164ms TOURIST LEAVE_NO_ENTRY id=94
-t=1169ms TOURIST ARRIVE id=95 age=39 vip=0
-t=1169ms CASHIER REJECT id=95
-t=1169ms TOURIST LEAVE_NO_ENTRY id=95
-t=1174ms TOURIST ARRIVE id=96 age=12 vip=1
-t=1174ms CASHIER REJECT id=96
-t=1174ms TOURIST LEAVE_NO_ENTRY id=96
-t=1180ms TOURIST ARRIVE id=97 age=33 vip=0
-t=1180ms CASHIER REJECT id=97
-t=1180ms TOURIST LEAVE_NO_ENTRY id=97
-t=1187ms TOURIST ARRIVE id=98 age=44 vip=1
-t=1187ms CASHIER REJECT id=98
-t=1187ms TOURIST LEAVE_NO_ENTRY id=98
-t=1195ms TOURIST ARRIVE id=99 age=27 vip=0
-t=1195ms CASHIER REJECT id=99
-t=1195ms TOURIST LEAVE_NO_ENTRY id=99
-t=1202ms TOURIST ARRIVE id=100 age=49 vip=0
-t=1202ms TOURIST ARRIVE id=101 age=4 vip=1
-t=1202ms TOURIST ARRIVE id=102 age=43 vip=0
-t=1202ms CASHIER REJECT id=101
-t=1202ms CASHIER REJECT id=100
-t=1202ms TOURIST LEAVE_NO_ENTRY id=101
-t=1202ms CASHIER REJECT id=102
-t=1202ms TOURIST LEAVE_NO_ENTRY id=100
-t=1202ms TOURIST LEAVE_NO_ENTRY id=102
-t=1207ms TOURIST ARRIVE id=103 age=31 vip=0
-t=1207ms TOURIST ARRIVE id=104 age=11 vip=0
-t=1207ms CASHIER REJECT id=103
-t=1207ms CASHIER REJECT id=104
-t=1207ms TOURIST LEAVE_NO_ENTRY id=103
-t=1207ms TOURIST LEAVE_NO_ENTRY id=104
-t=1213ms TOURIST ARRIVE id=105 age=30 vip=0
-t=1213ms TOURIST ARRIVE id=106 age=56 vip=0
-t=1213ms CASHIER REJECT id=105
-t=1213ms CASHIER REJECT id=106
-t=1213ms TOURIST LEAVE_NO_ENTRY id=105
-t=1213ms TOURIST LEAVE_NO_ENTRY id=106
-t=1218ms TOURIST ARRIVE id=107 age=24 vip=0
-t=1218ms TOURIST ARRIVE id=108 age=43 vip=0
-t=1218ms CASHIER REJECT id=107
-t=1218ms CASHIER REJECT id=108
-t=1218ms TOURIST LEAVE_NO_ENTRY id=107
-t=1218ms TOURIST LEAVE_NO_ENTRY id=108
-t=1224ms BRIDGE LEAVE id=17 occ=3/4
-t=1224ms BRIDGE ENTER id=18 dir=FWD occ=4/4
-t=1224ms TOURIST ARRIVE id=109 age=39 vip=0
-t=1224ms CASHIER REJECT id=109
-t=1224ms TOURIST LEAVE_NO_ENTRY id=109
-t=1224ms TOURIST ARRIVE id=110 age=13 vip=0
-t=1224ms CASHIER REJECT id=110
-t=1224ms TOURIST LEAVE_NO_ENTRY id=110
-t=1230ms TOURIST ARRIVE id=111 age=17 vip=0
-t=1230ms CASHIER REJECT id=111
-t=1230ms TOURIST LEAVE_NO_ENTRY id=111
-t=1238ms TOURIST ARRIVE id=112 age=24 vip=0
-t=1238ms CASHIER REJECT id=112
-t=1238ms TOURIST LEAVE_NO_ENTRY id=112
-t=1242ms TOURIST ARRIVE id=113 age=18 vip=0
-t=1242ms CASHIER REJECT id=113
-t=1242ms TOURIST LEAVE_NO_ENTRY id=113
-t=1249ms TOURIST ARRIVE id=114 age=38 vip=0
-t=1249ms CASHIER REJECT id=114
-t=1249ms TOURIST LEAVE_NO_ENTRY id=114
-t=1256ms TOURIST ARRIVE id=115 age=46 vip=0
-t=1256ms CASHIER REJECT id=115
-t=1256ms TOURIST LEAVE_NO_ENTRY id=115
-t=1261ms TOURIST ARRIVE id=116 age=67 vip=0
-t=1261ms CASHIER REJECT id=116
-t=1261ms TOURIST LEAVE_NO_ENTRY id=116
-t=1269ms TOURIST ARRIVE id=117 age=21 vip=0
-t=1269ms CASHIER REJECT id=117
-t=1269ms TOURIST LEAVE_NO_ENTRY id=117
-t=1275ms TOURIST ARRIVE id=118 age=60 vip=0
-t=1275ms CASHIER REJECT id=118
-t=1275ms TOURIST LEAVE_NO_ENTRY id=118
-t=1282ms TOURIST ARRIVE id=119 age=8 vip=0
-t=1282ms CASHIER REJECT id=119
-t=1282ms TOURIST LEAVE_NO_ENTRY id=119
-t=1287ms TOURIST ARRIVE id=120 age=60 vip=0
-t=1287ms CASHIER REJECT id=120
-t=1287ms TOURIST LEAVE_NO_ENTRY id=120
-t=1695ms BRIDGE LEAVE id=16 occ=3/4
-t=1695ms BRIDGE ENTER id=12 dir=FWD occ=4/4
-t=1695ms BRIDGE LEAVE id=14 occ=3/4
-t=1695ms BRIDGE ENTER id=13 dir=FWD occ=4/4
-t=1738ms BRIDGE LEAVE id=11 occ=3/4
-t=1877ms BRIDGE ENTER id=8 dir=FWD occ=4/4
-t=2017ms BRIDGE LEAVE id=18 occ=3/4
-t=2017ms BRIDGE ENTER id=9 dir=FWD occ=4/4
-t=2492ms TOWER QUEUE_JOIN id=17 vip=1 wait_vip=1 wait_norm=0
-t=2492ms TOWER QUEUE_LEAVE id=17 vip=1 inside=1/10 wait_vip=0 wait_norm=0 vip_streak=1
-t=2492ms TOWER ENTER id=17 vip=1 occ=1/10
-t=2492ms FERRY UNBOARD id=6 occ=0/2
-t=2492ms BRIDGE LEAVE id=13 occ=3/4
-t=2492ms BRIDGE ENTER id=10 dir=FWD occ=4/4
-t=2492ms BRIDGE LEAVE id=12 occ=3/4
-t=2492ms TOWER QUEUE_JOIN id=18 vip=1 wait_vip=1 wait_norm=0
-t=2492ms TOWER QUEUE_LEAVE id=18 vip=1 inside=2/10 wait_vip=0 wait_norm=0 vip_streak=2
-t=2492ms TOWER ENTER id=18 vip=1 occ=2/10
-t=2492ms BRIDGE ENTER id=15 dir=FWD occ=4/4
-t=2704ms BRIDGE LEAVE id=8 occ=3/4
-t=2865ms BRIDGE LEAVE id=9 occ=2/4
-t=2871ms TOWER DENY id=2 reason=GUARD_OF_AGE<=5
-t=2871ms TOWER DENY id=4 reason=AGE<=5
-t=2871ms TOWER QUEUE_JOIN id=3 vip=0 wait_vip=0 wait_norm=1
-t=2871ms TOWER QUEUE_LEAVE id=3 vip=0 inside=3/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=2871ms TOWER ENTER id=3 vip=0 occ=3/10
-t=2871ms TOWER QUEUE_JOIN id=5 vip=0 wait_vip=0 wait_norm=1
-t=2871ms TOWER QUEUE_LEAVE id=5 vip=0 inside=4/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=2871ms TOWER ENTER id=5 vip=0 occ=4/10
-t=2871ms TOWER QUEUE_JOIN id=9 vip=0 wait_vip=0 wait_norm=1
-t=2871ms TOWER QUEUE_LEAVE id=9 vip=0 inside=5/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=2871ms TOWER ENTER id=9 vip=0 occ=5/10
-t=2872ms TOWER QUEUE_JOIN id=7 vip=0 wait_vip=0 wait_norm=1
-t=2872ms TOWER QUEUE_LEAVE id=7 vip=0 inside=6/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=2872ms TOWER ENTER id=7 vip=0 occ=6/10
-t=3171ms TOWER QUEUE_JOIN id=12 vip=1 wait_vip=1 wait_norm=0
-t=3171ms TOWER QUEUE_LEAVE id=12 vip=1 inside=7/10 wait_vip=0 wait_norm=0 vip_streak=1
-t=3171ms TOWER ENTER id=12 vip=1 occ=7/10
-t=3497ms BRIDGE LEAVE id=10 occ=1/4
-t=3497ms BRIDGE LEAVE id=15 occ=0/4
-t=3497ms BRIDGE BRIDGE_DIR_SET dir=NONE
-t=3498ms TOWER QUEUE_JOIN id=10 vip=0 wait_vip=0 wait_norm=1
-t=3498ms TOWER QUEUE_LEAVE id=10 vip=0 inside=8/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=3498ms TOWER ENTER id=10 vip=0 occ=8/10
-t=3498ms TOWER QUEUE_JOIN id=15 vip=0 wait_vip=0 wait_norm=1
-t=3498ms TOWER QUEUE_LEAVE id=15 vip=0 inside=9/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=3498ms TOWER ENTER id=15 vip=0 occ=9/10
-t=3498ms TOWER QUEUE_JOIN id=16 vip=0 wait_vip=0 wait_norm=1
-t=3498ms TOWER QUEUE_LEAVE id=16 vip=0 inside=10/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=3498ms TOWER ENTER id=16 vip=0 occ=10/10
-t=3498ms TOWER QUEUE_JOIN id=14 vip=0 wait_vip=0 wait_norm=1
-t=3498ms TOWER QUEUE_JOIN id=13 vip=0 wait_vip=0 wait_norm=2
-t=3498ms TOWER QUEUE_JOIN id=11 vip=0 wait_vip=0 wait_norm=3
-t=3514ms TOWER QUEUE_JOIN id=8 vip=1 wait_vip=1 wait_norm=3
-t=3656ms TOWER QUEUE_JOIN id=6 vip=1 wait_vip=2 wait_norm=3
-t=5733ms TOWER LEAVE id=15 occ=9/10
-t=5789ms TOWER QUEUE_LEAVE id=6 vip=1 inside=10/10 wait_vip=1 wait_norm=3 vip_streak=1
-t=5789ms TOWER ENTER id=6 vip=1 occ=10/10
-t=5923ms TOWER LEAVE id=9 occ=9/10
-t=5923ms TOWER QUEUE_LEAVE id=8 vip=1 inside=10/10 wait_vip=0 wait_norm=3 vip_streak=2
-t=5923ms TOWER ENTER id=8 vip=1 occ=10/10
-t=5991ms TOWER LEAVE id=10 occ=9/10
-t=5991ms TOWER QUEUE_LEAVE id=13 vip=0 inside=10/10 wait_vip=0 wait_norm=2 vip_streak=0
-t=5991ms TOWER ENTER id=13 vip=0 occ=10/10
-t=6147ms TOWER LEAVE id=17 occ=9/10
-t=6147ms TOWER QUEUE_LEAVE id=11 vip=0 inside=10/10 wait_vip=0 wait_norm=1 vip_streak=0
-t=6147ms TOWER ENTER id=11 vip=0 occ=10/10
-t=6173ms TOWER LEAVE id=16 occ=9/10
-t=6173ms TOWER QUEUE_LEAVE id=14 vip=0 inside=10/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=6173ms TOWER ENTER id=14 vip=0 occ=10/10
-t=6266ms TOWER LEAVE id=5 occ=9/10
-t=6599ms TOWER LEAVE id=12 occ=8/10
-t=6599ms TOWER LEAVE id=3 occ=7/10
-t=6626ms TOWER LEAVE id=18 occ=6/10
-t=6743ms TOWER LEAVE id=7 occ=5/10
-t=6743ms FERRY QUEUE_JOIN id=5 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=6743ms FERRY QUEUE_LEAVE id=5 vip=0 dir=FWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=6743ms FERRY BOARD id=5 vip=0 dir=FWD occ=1/2
-t=6743ms FERRY QUEUE_JOIN id=4 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=6743ms FERRY QUEUE_LEAVE id=4 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=6743ms FERRY BOARD id=4 vip=0 dir=FWD occ=2/2
-t=6743ms FERRY QUEUE_JOIN id=3 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=6743ms FERRY QUEUE_JOIN id=9 vip=0 dir=FWD wait_vip=0 wait_norm=2
-t=6743ms FERRY QUEUE_JOIN id=2 vip=0 dir=FWD wait_vip=0 wait_norm=3
-t=6745ms FERRY QUEUE_JOIN id=7 vip=0 dir=FWD wait_vip=0 wait_norm=4
-t=7396ms FERRY QUEUE_JOIN id=17 vip=1 dir=FWD wait_vip=1 wait_norm=4
-t=7396ms FERRY QUEUE_JOIN id=18 vip=1 dir=FWD wait_vip=2 wait_norm=4
-t=7648ms FERRY UNBOARD id=5 occ=1/2
-t=7648ms FERRY UNBOARD id=4 occ=0/2
-t=7648ms FERRY QUEUE_LEAVE id=17 vip=1 dir=FWD onboard=1/2 wait_vip=1 wait_norm=4 vip_streak=1
-t=7648ms FERRY BOARD id=17 vip=1 dir=FWD occ=1/2
-t=7648ms FERRY QUEUE_LEAVE id=18 vip=1 dir=FWD onboard=2/2 wait_vip=0 wait_norm=4 vip_streak=2
-t=7648ms FERRY BOARD id=18 vip=1 dir=FWD occ=2/2
-t=7652ms FERRY QUEUE_JOIN id=12 vip=1 dir=FWD wait_vip=1 wait_norm=4
-t=8081ms TOWER LEAVE id=14 occ=4/10
-t=8552ms FERRY UNBOARD id=18 occ=1/2
-t=8552ms FERRY QUEUE_LEAVE id=12 vip=1 dir=FWD onboard=2/2 wait_vip=0 wait_norm=4 vip_streak=3
-t=8552ms FERRY BOARD id=12 vip=1 dir=FWD occ=2/2
-t=8614ms TOWER LEAVE id=8 occ=3/10
-t=8628ms FERRY UNBOARD id=17 occ=1/2
-t=8628ms FERRY QUEUE_LEAVE id=9 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=3 vip_streak=0
-t=8628ms FERRY BOARD id=9 vip=0 dir=FWD occ=2/2
-t=9434ms TOWER LEAVE id=13 occ=2/10
-t=9445ms FERRY QUEUE_JOIN id=8 vip=1 dir=FWD wait_vip=1 wait_norm=3
-t=9454ms FERRY UNBOARD id=12 occ=1/2
-t=9554ms FERRY QUEUE_LEAVE id=8 vip=1 dir=FWD onboard=2/2 wait_vip=0 wait_norm=3 vip_streak=1
-t=9554ms FERRY BOARD id=8 vip=1 dir=FWD occ=2/2
-t=9610ms VIP END id=17
-t=9670ms TOWER LEAVE id=6 occ=1/10
-t=9850ms VIP END id=18
-t=9850ms FERRY UNBOARD id=9 occ=1/2
-t=9850ms FERRY QUEUE_LEAVE id=2 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=2 vip_streak=0
-t=9850ms FERRY BOARD id=2 vip=0 dir=FWD occ=2/2
-t=9893ms TOWER LEAVE id=11 occ=0/10
-t=9893ms FERRY QUEUE_JOIN id=10 vip=0 dir=FWD wait_vip=0 wait_norm=3
-t=9893ms FERRY QUEUE_JOIN id=14 vip=0 dir=FWD wait_vip=0 wait_norm=4
-t=9893ms FERRY QUEUE_JOIN id=15 vip=0 dir=FWD wait_vip=0 wait_norm=5
-t=9893ms FERRY QUEUE_JOIN id=16 vip=0 dir=FWD wait_vip=0 wait_norm=6
-t=9893ms FERRY QUEUE_JOIN id=11 vip=0 dir=FWD wait_vip=0 wait_norm=7
-t=9893ms FERRY QUEUE_JOIN id=13 vip=0 dir=FWD wait_vip=0 wait_norm=8
-t=10572ms FERRY UNBOARD id=8 occ=1/2
-t=10572ms FERRY QUEUE_LEAVE id=10 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=7 vip_streak=0
-t=10572ms FERRY BOARD id=10 vip=0 dir=FWD occ=2/2
-t=10572ms VIP END id=12
-t=10598ms BRIDGE BRIDGE_DIR_SET dir=BWD
-t=10598ms BRIDGE ENTER id=6 dir=BWD occ=1/4
-t=10816ms FERRY UNBOARD id=2 occ=1/2
-t=10816ms FERRY QUEUE_LEAVE id=14 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=6 vip_streak=0
-t=10816ms FERRY BOARD id=14 vip=0 dir=FWD occ=2/2
-t=11378ms VIP END id=8
-t=11459ms FERRY UNBOARD id=10 occ=1/2
-t=11459ms FERRY QUEUE_LEAVE id=11 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=5 vip_streak=0
-t=11535ms FERRY BOARD id=11 vip=0 dir=FWD occ=2/2
-t=11562ms BRIDGE LEAVE id=6 occ=0/4
-t=11562ms BRIDGE BRIDGE_DIR_SET dir=NONE
-t=11739ms FERRY UNBOARD id=14 occ=1/2
-t=11739ms FERRY QUEUE_LEAVE id=13 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=4 vip_streak=0
-t=11795ms FERRY BOARD id=13 vip=0 dir=FWD occ=2/2
-t=12819ms FERRY UNBOARD id=11 occ=1/2
-t=12920ms FERRY QUEUE_LEAVE id=15 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=3 vip_streak=0
-t=12976ms FERRY BOARD id=15 vip=0 dir=FWD occ=2/2
-t=12976ms VIP END id=6
-t=12976ms FERRY UNBOARD id=13 occ=1/2
-t=12976ms FERRY QUEUE_LEAVE id=16 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=2 vip_streak=0
-t=12976ms FERRY BOARD id=16 vip=0 dir=FWD occ=2/2
-t=13890ms FERRY UNBOARD id=15 occ=1/2
-t=13890ms FERRY UNBOARD id=16 occ=0/2
-t=13890ms FERRY QUEUE_LEAVE id=7 vip=0 dir=FWD onboard=1/2 wait_vip=0 wait_norm=1 vip_streak=0
-t=13890ms FERRY BOARD id=7 vip=0 dir=FWD occ=1/2
-t=13890ms TOURIST RETURN_K id=10 gid=0
-t=13890ms FERRY QUEUE_LEAVE id=3 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=13890ms FERRY BOARD id=3 vip=0 dir=FWD occ=2/2
-t=13890ms TOURIST RETURN_K id=13 gid=0
-t=13890ms TOURIST RETURN_K id=16 gid=0
-t=13890ms TOURIST RETURN_K id=14 gid=0
-t=13890ms TOURIST RETURN_K id=15 gid=0
-t=13890ms TOURIST RETURN_K id=11 gid=0
-t=14510ms GUIDE GROUP_END guide=0 gid=0
-t=14510ms GUIDE GROUP_START guide=0 gid=1 route=1
-t=14510ms TOURIST GROUP_JOIN id=22 gid=1 guide=0
-t=14510ms BRIDGE BRIDGE_DIR_SET dir=FWD
-t=14510ms BRIDGE ENTER id=22 dir=FWD occ=1/4
-t=14510ms TOURIST GROUP_JOIN id=20 gid=1 guide=0
-t=14510ms BRIDGE ENTER id=20 dir=FWD occ=2/4
-t=14510ms TOURIST GROUP_JOIN id=19 gid=1 guide=0
-t=14510ms TOURIST GROUP_JOIN id=25 gid=1 guide=0
-t=14510ms TOURIST GROUP_JOIN id=21 gid=1 guide=0
-t=14510ms TOURIST GROUP_JOIN id=23 gid=1 guide=0
-t=14510ms BRIDGE ENTER id=23 dir=FWD occ=3/4
-t=14510ms BRIDGE ENTER id=19 dir=FWD occ=4/4
-t=15107ms CASHIER STOP
-t=15107ms BRIDGE LEAVE id=19 occ=3/4
-t=15107ms BRIDGE ENTER id=25 dir=FWD occ=4/4
-t=15177ms BRIDGE LEAVE id=23 occ=3/4
-t=15177ms BRIDGE ENTER id=21 dir=FWD occ=4/4
-t=15459ms BRIDGE LEAVE id=22 occ=3/4
-t=15495ms FERRY UNBOARD id=3 occ=1/2
-t=15651ms FERRY UNBOARD id=7 occ=0/2
-t=15651ms BRIDGE LEAVE id=21 occ=2/4
-t=15651ms TOURIST RETURN_K id=2 gid=100000
-t=15651ms TOURIST RETURN_K id=5 gid=100000
-t=15651ms TOURIST RETURN_K id=9 gid=100000
-t=15651ms TOURIST RETURN_K id=4 gid=100000
-t=15651ms TOURIST RETURN_K id=3 gid=100000
-t=15651ms TOURIST RETURN_K id=7 gid=100000
-t=16097ms BRIDGE LEAVE id=25 occ=1/4
-t=16383ms BRIDGE LEAVE id=20 occ=0/4
-t=16383ms BRIDGE BRIDGE_DIR_SET dir=NONE
-t=16383ms TOWER QUEUE_JOIN id=20 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=20 vip=0 inside=1/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=20 vip=0 occ=1/10
-t=16383ms TOWER QUEUE_JOIN id=19 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=19 vip=0 inside=2/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=19 vip=0 occ=2/10
-t=16383ms TOWER QUEUE_JOIN id=21 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=21 vip=0 inside=3/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=21 vip=0 occ=3/10
-t=16383ms TOWER QUEUE_JOIN id=22 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=22 vip=0 inside=4/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=22 vip=0 occ=4/10
-t=16383ms TOWER QUEUE_JOIN id=23 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=23 vip=0 inside=5/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=23 vip=0 occ=5/10
-t=16383ms TOWER QUEUE_JOIN id=25 vip=0 wait_vip=0 wait_norm=1
-t=16383ms TOWER QUEUE_LEAVE id=25 vip=0 inside=6/10 wait_vip=0 wait_norm=0 vip_streak=0
-t=16383ms TOWER ENTER id=25 vip=0 occ=6/10
-t=16383ms GUIDE GROUP_END guide=1 gid=100000
-t=16383ms GUIDE STOP guide=1
-t=18644ms TOWER LEAVE id=20 occ=5/10
-t=19318ms TOWER LEAVE id=19 occ=4/10
-t=19410ms TOWER LEAVE id=25 occ=3/10
-t=19708ms TOWER LEAVE id=21 occ=2/10
-t=19708ms TOWER LEAVE id=23 occ=1/10
-t=19788ms TOWER LEAVE id=22 occ=0/10
-t=19944ms FERRY QUEUE_JOIN id=25 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=19944ms FERRY QUEUE_LEAVE id=25 vip=0 dir=FWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=19944ms FERRY BOARD id=25 vip=0 dir=FWD occ=1/2
-t=19944ms FERRY QUEUE_JOIN id=20 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=19944ms FERRY QUEUE_LEAVE id=20 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=19944ms FERRY BOARD id=20 vip=0 dir=FWD occ=2/2
-t=19944ms FERRY QUEUE_JOIN id=22 vip=0 dir=FWD wait_vip=0 wait_norm=1
-t=19944ms FERRY QUEUE_JOIN id=21 vip=0 dir=FWD wait_vip=0 wait_norm=2
-t=19944ms FERRY QUEUE_JOIN id=23 vip=0 dir=FWD wait_vip=0 wait_norm=3
-t=19944ms FERRY QUEUE_JOIN id=19 vip=0 dir=FWD wait_vip=0 wait_norm=4
-t=20940ms FERRY UNBOARD id=25 occ=1/2
-t=20940ms FERRY QUEUE_LEAVE id=21 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=3 vip_streak=0
-t=20940ms FERRY BOARD id=21 vip=0 dir=FWD occ=2/2
-t=21432ms FERRY UNBOARD id=20 occ=1/2
-t=21432ms FERRY QUEUE_LEAVE id=19 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=2 vip_streak=0
-t=21432ms FERRY BOARD id=19 vip=0 dir=FWD occ=2/2
-t=23405ms FERRY UNBOARD id=19 occ=1/2
-t=23461ms FERRY QUEUE_LEAVE id=22 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=1 vip_streak=0
-t=23461ms FERRY BOARD id=22 vip=0 dir=FWD occ=2/2
-t=23461ms FERRY UNBOARD id=21 occ=1/2
-t=23461ms FERRY QUEUE_LEAVE id=23 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
-t=23461ms FERRY BOARD id=23 vip=0 dir=FWD occ=2/2
-t=24362ms FERRY UNBOARD id=23 occ=1/2
-t=24362ms FERRY UNBOARD id=22 occ=0/2
-t=24362ms TOURIST RETURN_K id=19 gid=1
-t=24462ms TOURIST RETURN_K id=20 gid=1
-t=24462ms TOURIST RETURN_K id=21 gid=1
-t=24462ms TOURIST RETURN_K id=22 gid=1
-t=24462ms TOURIST RETURN_K id=23 gid=1
-t=24462ms TOURIST RETURN_K id=25 gid=1
+t=6ms TOURIST ARRIVE id=2 age=35 vip=0
+t=6ms CASHIER ENTER id=2 age=35 vip=0 count=2/60 pay=1
+t=6ms CASHIER EXIT id=1
+t=12ms TOURIST ARRIVE id=3 age=31 vip=0
+t=12ms CASHIER ENTER id=3 age=31 vip=0 count=3/60 pay=1
+t=12ms TOURIST ARRIVE id=4 age=0 vip=0
+t=12ms CASHIER ENTER id=4 age=0 vip=0 count=4/60 pay=0
+t=19ms TOURIST ARRIVE id=5 age=71 vip=0
+t=19ms CASHIER ENTER id=5 age=71 vip=0 count=5/60 pay=1
+t=23ms TOURIST ARRIVE id=6 age=55 vip=1
+t=23ms CASHIER ENTER id=6 age=55 vip=1 count=6/60 pay=0
+t=23ms VIP START id=6 route=2
+t=28ms TOURIST ARRIVE id=7 age=65 vip=0
+t=28ms CASHIER ENTER id=7 age=65 vip=0 count=7/60 pay=1
+t=33ms TOURIST ARRIVE id=8 age=48 vip=1
+t=33ms CASHIER ENTER id=8 age=48 vip=1 count=8/60 pay=0
+t=33ms VIP START id=8 route=1
+t=38ms TOURIST ARRIVE id=9 age=24 vip=0
+t=38ms TOURIST ARRIVE id=10 age=57 vip=0
+t=38ms CASHIER ENTER id=9 age=24 vip=0 count=9/60 pay=1
+t=38ms CASHIER ENTER id=10 age=57 vip=0 count=10/60 pay=1
+t=38ms GUARD GUARD_ASSIGN child=4 age=0 guardian=3 gid=100000
+t=38ms GUIDE GROUP_START guide=1 gid=100000 route=1
+t=38ms GUIDE SEGMENT K->A gid=100000
+t=38ms TOURIST GROUP_JOIN id=4 gid=100000 guide=1
+t=38ms TOURIST GROUP_JOIN id=7 gid=100000 guide=1
+t=38ms TOURIST GROUP_JOIN id=9 gid=100000 guide=1
+t=38ms TOURIST GROUP_JOIN id=3 gid=100000 guide=1
+t=38ms TOURIST GROUP_JOIN id=2 gid=100000 guide=1
+t=38ms TOURIST GROUP_JOIN id=5 gid=100000 guide=1
+t=44ms TOURIST ARRIVE id=11 age=65 vip=0
+t=44ms CASHIER ENTER id=11 age=65 vip=0 count=11/60 pay=1
+t=50ms TOURIST ARRIVE id=12 age=58 vip=0
+t=50ms CASHIER ENTER id=12 age=58 vip=0 count=12/60 pay=1
+t=50ms TOURIST ARRIVE id=13 age=59 vip=1
+t=50ms CASHIER ENTER id=13 age=59 vip=1 count=13/60 pay=0
+t=50ms VIP START id=13 route=2
+t=55ms TOURIST ARRIVE id=14 age=33 vip=0
+t=55ms CASHIER ENTER id=14 age=33 vip=0 count=14/60 pay=1
+t=62ms TOURIST ARRIVE id=15 age=5 vip=0
+t=62ms CASHIER ENTER id=15 age=5 vip=0 count=15/60 pay=0
+t=230ms TOURIST ARRIVE id=16 age=35 vip=0
+t=230ms CASHIER ENTER id=16 age=35 vip=0 count=16/60 pay=1
+t=230ms GUARD GUARD_ASSIGN child=15 age=5 guardian=12 gid=0
+t=230ms GUIDE GROUP_START guide=0 gid=0 route=1
+t=230ms TOURIST GROUP_JOIN id=11 gid=0 guide=0
+t=230ms TOURIST GROUP_JOIN id=10 gid=0 guide=0
+t=230ms TOURIST GROUP_JOIN id=12 gid=0 guide=0
+t=230ms TOURIST GROUP_JOIN id=15 gid=0 guide=0
+t=230ms GUIDE SEGMENT K->A gid=0
+t=230ms TOURIST GROUP_JOIN id=16 gid=0 guide=0
+t=230ms TOURIST GROUP_JOIN id=14 gid=0 guide=0
+t=332ms TOURIST ARRIVE id=17 age=4 vip=0
+t=332ms TOURIST ARRIVE id=18 age=5 vip=0
+t=332ms CASHIER ENTER id=17 age=4 vip=0 count=17/60 pay=0
+t=332ms CASHIER ENTER id=18 age=5 vip=0 count=18/60 pay=0
+t=332ms TOURIST ARRIVE id=19 age=5 vip=0
+t=332ms CASHIER ENTER id=19 age=5 vip=0 count=19/60 pay=0
+t=407ms TOURIST ARRIVE id=20 age=60 vip=0
+t=407ms CASHIER ENTER id=20 age=60 vip=0 count=20/60 pay=1
+t=412ms TOURIST ARRIVE id=21 age=60 vip=0
+t=412ms CASHIER ENTER id=21 age=60 vip=0 count=21/60 pay=1
+t=418ms TOURIST ARRIVE id=22 age=46 vip=0
+t=418ms CASHIER ENTER id=22 age=46 vip=0 count=22/60 pay=1
+t=422ms TOURIST ARRIVE id=23 age=12 vip=0
+t=422ms CASHIER ENTER id=23 age=12 vip=0 count=23/60 pay=1
+t=428ms TOURIST ARRIVE id=24 age=55 vip=1
+t=428ms CASHIER ENTER id=24 age=55 vip=1 count=24/60 pay=0
+t=428ms VIP START id=24 route=1
+t=433ms TOURIST ARRIVE id=25 age=58 vip=0
+t=433ms CASHIER ENTER id=25 age=58 vip=0 count=25/60 pay=1
+t=433ms TOURIST ARRIVE id=26 age=53 vip=0
+t=433ms CASHIER ENTER id=26 age=53 vip=0 count=26/60 pay=1
+t=438ms TOURIST ARRIVE id=27 age=70 vip=0
+t=438ms CASHIER ENTER id=27 age=70 vip=0 count=27/60 pay=1
+t=444ms TOURIST ARRIVE id=28 age=27 vip=0
+t=444ms TOURIST ARRIVE id=29 age=58 vip=0
+t=444ms CASHIER ENTER id=28 age=27 vip=0 count=28/60 pay=1
+t=444ms CASHIER ENTER id=29 age=58 vip=0 count=29/60 pay=1
+t=449ms TOURIST ARRIVE id=30 age=61 vip=0
+t=449ms CASHIER ENTER id=30 age=61 vip=0 count=30/60 pay=1
+t=449ms TOURIST ARRIVE id=31 age=72 vip=0
+t=449ms CASHIER ENTER id=31 age=72 vip=0 count=31/60 pay=1
+t=456ms TOURIST ARRIVE id=32 age=56 vip=0
+t=456ms CASHIER ENTER id=32 age=56 vip=0 count=32/60 pay=1
+t=460ms TOURIST ARRIVE id=33 age=25 vip=0
+t=460ms CASHIER ENTER id=33 age=25 vip=0 count=33/60 pay=1
+t=621ms TOURIST ARRIVE id=34 age=27 vip=0
+t=621ms CASHIER ENTER id=34 age=27 vip=0 count=34/60 pay=1
+t=666ms TOURIST ARRIVE id=35 age=5 vip=1
+t=666ms TOURIST ARRIVE id=36 age=57 vip=0
+t=666ms CASHIER ENTER id=35 age=5 vip=1 count=35/60 pay=0
+t=666ms CASHIER ENTER id=36 age=57 vip=0 count=36/60 pay=1
+t=666ms VIP DENY_CHILD id=35 age=5 reason=NEEDS_GUARDIAN
+t=673ms TOURIST ARRIVE id=37 age=47 vip=0
+t=673ms CASHIER ENTER id=37 age=47 vip=0 count=37/60 pay=1
+t=673ms CASHIER EXIT id=35
+t=678ms TOURIST ARRIVE id=38 age=31 vip=0
+t=678ms CASHIER ENTER id=38 age=31 vip=0 count=38/60 pay=1
+t=680ms TOURIST ARRIVE id=39 age=12 vip=0
+t=680ms CASHIER ENTER id=39 age=12 vip=0 count=39/60 pay=1
+t=847ms TOURIST ARRIVE id=40 age=63 vip=0
+t=847ms TOURIST ARRIVE id=41 age=66 vip=0
+t=847ms CASHIER ENTER id=40 age=63 vip=0 count=40/60 pay=1
+t=847ms CASHIER ENTER id=41 age=66 vip=0 count=41/60 pay=1
+t=849ms TOURIST ARRIVE id=42 age=52 vip=0
+t=849ms TOURIST ARRIVE id=43 age=58 vip=0
+t=849ms TOURIST ARRIVE id=45 age=43 vip=0
+t=849ms TOURIST ARRIVE id=44 age=33 vip=0
+t=849ms CASHIER ENTER id=42 age=52 vip=0 count=42/60 pay=1
+t=849ms CASHIER ENTER id=43 age=58 vip=0 count=43/60 pay=1
+t=849ms CASHIER ENTER id=45 age=43 vip=0 count=44/60 pay=1
+t=849ms CASHIER ENTER id=44 age=33 vip=0 count=45/60 pay=1
+t=925ms TOURIST ARRIVE id=46 age=43 vip=0
+t=925ms CASHIER ENTER id=46 age=43 vip=0 count=46/60 pay=1
+t=925ms TOURIST ARRIVE id=47 age=16 vip=0
+t=925ms CASHIER ENTER id=47 age=16 vip=0 count=47/60 pay=1
+t=925ms TOURIST ARRIVE id=48 age=22 vip=0
+t=925ms CASHIER ENTER id=48 age=22 vip=0 count=48/60 pay=1
+t=931ms TOURIST ARRIVE id=49 age=6 vip=0
+t=931ms CASHIER ENTER id=49 age=6 vip=0 count=49/60 pay=0
+t=931ms TOURIST ARRIVE id=50 age=6 vip=0
+t=931ms CASHIER ENTER id=50 age=6 vip=0 count=50/60 pay=0
+t=931ms TOURIST ARRIVE id=51 age=53 vip=0
+t=936ms CASHIER ENTER id=51 age=53 vip=0 count=51/60 pay=1
+t=936ms BRIDGE BRIDGE_DIR_SET dir=FWD
+t=936ms BRIDGE ENTER id=2 dir=FWD occ=1/4
+t=936ms BRIDGE ENTER id=5 dir=FWD occ=2/4
+t=936ms BRIDGE ENTER id=3 dir=FWD occ=3/4
+t=936ms BRIDGE ENTER id=7 dir=FWD occ=4/4
+t=936ms TOURIST ARRIVE id=52 age=49 vip=0
+t=936ms CASHIER ENTER id=52 age=49 vip=0 count=52/60 pay=1
+t=941ms TOURIST ARRIVE id=53 age=62 vip=0
+t=941ms CASHIER ENTER id=53 age=62 vip=0 count=53/60 pay=1
+t=946ms TOURIST ARRIVE id=54 age=69 vip=0
+t=946ms CASHIER ENTER id=54 age=69 vip=0 count=54/60 pay=1
+t=951ms TOURIST ARRIVE id=55 age=21 vip=0
+t=951ms CASHIER ENTER id=55 age=21 vip=0 count=55/60 pay=1
+t=957ms TOURIST ARRIVE id=56 age=70 vip=0
+t=957ms CASHIER ENTER id=56 age=70 vip=0 count=56/60 pay=1
+t=1115ms FERRY QUEUE_JOIN id=6 vip=1 dir=BWD wait_vip=1 wait_norm=0
+t=1115ms FERRY QUEUE_LEAVE id=6 vip=1 dir=BWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=1
+t=1115ms FERRY BOARD id=6 vip=1 dir=BWD occ=1/2
+t=1115ms TOURIST ARRIVE id=57 age=37 vip=0
+t=1115ms TOURIST ARRIVE id=58 age=49 vip=0
+t=1115ms CASHIER ENTER id=57 age=37 vip=0 count=57/60 pay=1
+t=1115ms CASHIER ENTER id=58 age=49 vip=0 count=58/60 pay=1
+t=1141ms TOURIST ARRIVE id=59 age=41 vip=0
+t=1141ms FERRY QUEUE_JOIN id=13 vip=1 dir=BWD wait_vip=1 wait_norm=0
+t=1141ms FERRY QUEUE_LEAVE id=13 vip=1 dir=BWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=2
+t=1141ms FERRY BOARD id=13 vip=1 dir=BWD occ=2/2
+t=1141ms CASHIER ENTER id=59 age=41 vip=0 count=59/60 pay=1
+t=1148ms TOURIST ARRIVE id=60 age=70 vip=0
+t=1148ms CASHIER ENTER id=60 age=70 vip=0 count=60/60 pay=1
+t=1154ms TOURIST ARRIVE id=61 age=9 vip=0
+t=1154ms CASHIER REJECT id=61 reason=LIMIT_N
+t=1154ms TOURIST LEAVE_NO_ENTRY id=61
+t=1158ms TOURIST ARRIVE id=62 age=27 vip=0
+t=1158ms CASHIER REJECT id=62 reason=LIMIT_N
+t=1158ms TOURIST LEAVE_NO_ENTRY id=62
+t=1163ms TOURIST ARRIVE id=63 age=23 vip=0
+t=1163ms CASHIER REJECT id=63 reason=LIMIT_N
+t=1163ms TOURIST LEAVE_NO_ENTRY id=63
+t=1168ms TOURIST ARRIVE id=64 age=18 vip=0
+t=1168ms CASHIER REJECT id=64 reason=LIMIT_N
+t=1168ms TOURIST LEAVE_NO_ENTRY id=64
+t=1173ms TOURIST ARRIVE id=65 age=72 vip=0
+t=1173ms CASHIER REJECT id=65 reason=LIMIT_N
+t=1173ms TOURIST LEAVE_NO_ENTRY id=65
+t=1178ms TOURIST ARRIVE id=66 age=70 vip=0
+t=1178ms CASHIER REJECT id=66 reason=LIMIT_N
+t=1178ms TOURIST LEAVE_NO_ENTRY id=66
+t=1183ms TOURIST ARRIVE id=67 age=17 vip=0
+t=1183ms CASHIER REJECT id=67 reason=LIMIT_N
+t=1183ms TOURIST LEAVE_NO_ENTRY id=67
+t=1189ms TOURIST ARRIVE id=68 age=39 vip=0
+t=1189ms CASHIER REJECT id=68 reason=LIMIT_N
+t=1189ms TOURIST LEAVE_NO_ENTRY id=68
+t=1194ms TOURIST ARRIVE id=69 age=10 vip=1
+t=1194ms CASHIER REJECT id=69 reason=LIMIT_N
+t=1194ms TOURIST LEAVE_NO_ENTRY id=69
+t=1199ms TOURIST ARRIVE id=70 age=70 vip=0
+t=1199ms TOURIST ARRIVE id=71 age=73 vip=0
+t=1199ms TOURIST ARRIVE id=72 age=3 vip=0
+t=1199ms CASHIER REJECT id=70 reason=LIMIT_N
+t=1199ms TOURIST ARRIVE id=73 age=55 vip=0
+t=1199ms CASHIER REJECT id=71 reason=LIMIT_N
+t=1199ms CASHIER REJECT id=72 reason=LIMIT_N
+t=1199ms CASHIER REJECT id=73 reason=LIMIT_N
+t=1199ms TOURIST LEAVE_NO_ENTRY id=70
+t=1199ms TOURIST LEAVE_NO_ENTRY id=71
+t=1199ms TOURIST LEAVE_NO_ENTRY id=72
+t=1199ms TOURIST LEAVE_NO_ENTRY id=73
+t=1205ms TOURIST ARRIVE id=74 age=4 vip=0
+t=1205ms CASHIER REJECT id=74 reason=LIMIT_N
+t=1205ms TOURIST LEAVE_NO_ENTRY id=74
+t=1209ms TOURIST ARRIVE id=75 age=53 vip=1
+t=1209ms TOURIST ARRIVE id=76 age=64 vip=0
+t=1209ms CASHIER REJECT id=75 reason=LIMIT_N
+t=1209ms CASHIER REJECT id=76 reason=LIMIT_N
+t=1209ms TOURIST LEAVE_NO_ENTRY id=75
+t=1209ms TOURIST LEAVE_NO_ENTRY id=76
+t=1214ms TOURIST ARRIVE id=77 age=18 vip=1
+t=1214ms CASHIER REJECT id=77 reason=LIMIT_N
+t=1214ms TOURIST LEAVE_NO_ENTRY id=77
+t=1214ms TOURIST ARRIVE id=78 age=74 vip=0
+t=1214ms CASHIER REJECT id=78 reason=LIMIT_N
+t=1214ms TOURIST LEAVE_NO_ENTRY id=78
+t=1219ms TOURIST ARRIVE id=79 age=34 vip=0
+t=1219ms CASHIER REJECT id=79 reason=LIMIT_N
+t=1219ms TOURIST LEAVE_NO_ENTRY id=79
+t=1226ms TOURIST ARRIVE id=80 age=69 vip=0
+t=1226ms CASHIER REJECT id=80 reason=LIMIT_N
+t=1227ms TOURIST LEAVE_NO_ENTRY id=80
+t=1251ms TOURIST ARRIVE id=81 age=4 vip=0
+t=1307ms CASHIER REJECT id=81 reason=LIMIT_N
+t=1307ms TOURIST LEAVE_NO_ENTRY id=81
+t=1307ms TOURIST ARRIVE id=83 age=72 vip=0
+t=1307ms CASHIER REJECT id=83 reason=LIMIT_N
+t=1307ms TOURIST ARRIVE id=82 age=23 vip=0
+t=1307ms TOURIST ARRIVE id=84 age=18 vip=1
+t=1307ms CASHIER REJECT id=84 reason=LIMIT_N
+t=1307ms CASHIER REJECT id=82 reason=LIMIT_N
+t=1307ms TOURIST LEAVE_NO_ENTRY id=84
+t=1307ms TOURIST LEAVE_NO_ENTRY id=83
+t=1307ms TOURIST LEAVE_NO_ENTRY id=82
+t=1313ms TOURIST ARRIVE id=85 age=63 vip=1
+t=1313ms CASHIER REJECT id=85 reason=LIMIT_N
+t=1313ms TOURIST LEAVE_NO_ENTRY id=85
+t=1319ms TOURIST ARRIVE id=86 age=72 vip=0
+t=1319ms CASHIER REJECT id=86 reason=LIMIT_N
+t=1319ms TOURIST ARRIVE id=87 age=69 vip=0
+t=1319ms TOURIST LEAVE_NO_ENTRY id=86
+t=1319ms CASHIER REJECT id=87 reason=LIMIT_N
+t=1319ms TOURIST LEAVE_NO_ENTRY id=87
+t=1324ms TOURIST ARRIVE id=88 age=14 vip=0
+t=1324ms CASHIER REJECT id=88 reason=LIMIT_N
+t=1324ms TOURIST LEAVE_NO_ENTRY id=88
+t=1329ms TOURIST ARRIVE id=89 age=73 vip=0
+t=1329ms CASHIER REJECT id=89 reason=LIMIT_N
+t=1329ms TOURIST LEAVE_NO_ENTRY id=89
+t=1334ms TOURIST ARRIVE id=90 age=60 vip=0
+t=1334ms CASHIER REJECT id=90 reason=LIMIT_N
+t=1334ms TOURIST LEAVE_NO_ENTRY id=90
+t=1341ms TOURIST ARRIVE id=91 age=22 vip=0
+t=1341ms CASHIER REJECT id=91 reason=LIMIT_N
+t=1341ms TOURIST LEAVE_NO_ENTRY id=91
+t=1346ms TOURIST ARRIVE id=92 age=18 vip=0
+t=1346ms CASHIER REJECT id=92 reason=LIMIT_N
+t=1346ms TOURIST ARRIVE id=93 age=66 vip=0
+t=1346ms TOURIST LEAVE_NO_ENTRY id=92
+t=1346ms CASHIER REJECT id=93 reason=LIMIT_N
+t=1346ms TOURIST LEAVE_NO_ENTRY id=93
+t=1352ms TOURIST ARRIVE id=94 age=22 vip=1
+t=1352ms CASHIER REJECT id=94 reason=LIMIT_N
+t=1352ms TOURIST LEAVE_NO_ENTRY id=94
+t=1357ms TOURIST ARRIVE id=95 age=32 vip=1
+t=1357ms CASHIER REJECT id=95 reason=LIMIT_N
+t=1357ms TOURIST LEAVE_NO_ENTRY id=95
+t=1364ms TOURIST ARRIVE id=96 age=43 vip=0
+t=1364ms TOURIST ARRIVE id=97 age=43 vip=0
+t=1364ms CASHIER REJECT id=96 reason=LIMIT_N
+t=1364ms CASHIER REJECT id=97 reason=LIMIT_N
+t=1364ms TOURIST LEAVE_NO_ENTRY id=97
+t=1364ms TOURIST LEAVE_NO_ENTRY id=96
+t=1368ms TOURIST ARRIVE id=98 age=45 vip=0
+t=1368ms CASHIER REJECT id=98 reason=LIMIT_N
+t=1368ms TOURIST LEAVE_NO_ENTRY id=98
+t=1368ms TOURIST ARRIVE id=99 age=40 vip=0
+t=1368ms CASHIER REJECT id=99 reason=LIMIT_N
+t=1368ms TOURIST LEAVE_NO_ENTRY id=99
+t=1374ms TOURIST ARRIVE id=100 age=26 vip=1
+t=1374ms CASHIER REJECT id=100 reason=LIMIT_N
+t=1374ms TOURIST LEAVE_NO_ENTRY id=100
+t=1379ms TOURIST ARRIVE id=101 age=16 vip=0
+t=1379ms TOURIST ARRIVE id=102 age=17 vip=0
+t=1379ms CASHIER REJECT id=101 reason=LIMIT_N
+t=1379ms CASHIER REJECT id=102 reason=LIMIT_N
+t=1379ms TOURIST LEAVE_NO_ENTRY id=102
+t=1379ms TOURIST LEAVE_NO_ENTRY id=101
+t=1385ms TOURIST ARRIVE id=103 age=68 vip=0
+t=1385ms CASHIER REJECT id=103 reason=LIMIT_N
+t=1385ms TOURIST LEAVE_NO_ENTRY id=103
+t=1390ms TOURIST ARRIVE id=104 age=10 vip=0
+t=1390ms CASHIER REJECT id=104 reason=LIMIT_N
+t=1390ms TOURIST LEAVE_NO_ENTRY id=104
+t=1395ms TOURIST ARRIVE id=105 age=28 vip=0
+t=1395ms CASHIER REJECT id=105 reason=LIMIT_N
+t=1395ms TOURIST LEAVE_NO_ENTRY id=105
+t=1400ms TOURIST ARRIVE id=106 age=16 vip=0
+t=1400ms CASHIER REJECT id=106 reason=LIMIT_N
+t=1400ms TOURIST LEAVE_NO_ENTRY id=106
+t=1406ms TOURIST ARRIVE id=107 age=36 vip=0
+t=1406ms TOURIST ARRIVE id=108 age=14 vip=0
+t=1406ms CASHIER REJECT id=107 reason=LIMIT_N
+t=1406ms CASHIER REJECT id=108 reason=LIMIT_N
+t=1406ms TOURIST LEAVE_NO_ENTRY id=107
+t=1406ms TOURIST LEAVE_NO_ENTRY id=108
+t=1412ms TOURIST ARRIVE id=109 age=50 vip=0
+t=1412ms CASHIER REJECT id=109 reason=LIMIT_N
+t=1412ms TOURIST LEAVE_NO_ENTRY id=109
+t=1417ms TOURIST ARRIVE id=110 age=4 vip=0
+t=1417ms TOURIST ARRIVE id=111 age=31 vip=0
+t=1417ms CASHIER REJECT id=110 reason=LIMIT_N
+t=1417ms CASHIER REJECT id=111 reason=LIMIT_N
+t=1417ms TOURIST LEAVE_NO_ENTRY id=111
+t=1417ms TOURIST ARRIVE id=112 age=1 vip=0
+t=1417ms TOURIST LEAVE_NO_ENTRY id=110
+t=1417ms CASHIER REJECT id=112 reason=LIMIT_N
+t=1417ms TOURIST LEAVE_NO_ENTRY id=112
+t=1422ms TOURIST ARRIVE id=113 age=72 vip=0
+t=1422ms CASHIER REJECT id=113 reason=LIMIT_N
+t=1422ms TOURIST LEAVE_NO_ENTRY id=113
+t=1422ms TOURIST ARRIVE id=114 age=71 vip=0
+t=1422ms CASHIER REJECT id=114 reason=LIMIT_N
+t=1422ms TOURIST LEAVE_NO_ENTRY id=114
+t=1427ms TOURIST ARRIVE id=115 age=32 vip=0
+t=1427ms CASHIER REJECT id=115 reason=LIMIT_N
+t=1427ms TOURIST LEAVE_NO_ENTRY id=115
+t=1433ms TOURIST ARRIVE id=116 age=22 vip=0
+t=1433ms CASHIER REJECT id=116 reason=LIMIT_N
+t=1433ms TOURIST LEAVE_NO_ENTRY id=116
+t=1438ms TOURIST ARRIVE id=117 age=44 vip=0
+t=1438ms CASHIER REJECT id=117 reason=LIMIT_N
+t=1438ms TOURIST LEAVE_NO_ENTRY id=117
+t=1530ms TOURIST ARRIVE id=118 age=19 vip=0
+t=1530ms BRIDGE LEAVE id=7 occ=3/4
+t=1530ms TOURIST ARRIVE id=120 age=26 vip=0
+t=1530ms BRIDGE ENTER id=8 dir=FWD occ=4/4
+t=1530ms BRIDGE LEAVE id=3 occ=3/4
+t=1530ms TOURIST ARRIVE id=119 age=48 vip=0
+t=1530ms CASHIER REJECT id=118 reason=LIMIT_N
+t=1530ms CASHIER REJECT id=120 reason=LIMIT_N
+t=1530ms BRIDGE ENTER id=15 dir=FWD occ=4/4
+t=1530ms TOURIST LEAVE_NO_ENTRY id=118
+t=1530ms CASHIER REJECT id=119 reason=LIMIT_N
+t=1530ms TOURIST LEAVE_NO_ENTRY id=119
+t=1530ms TOURIST LEAVE_NO_ENTRY id=120
+t=2102ms BRIDGE LEAVE id=2 occ=3/4
+t=2102ms BRIDGE ENTER id=16 dir=FWD occ=4/4
+t=2102ms FERRY UNBOARD id=13 occ=1/2
+t=2102ms FERRY UNBOARD id=6 occ=0/2
+t=2102ms BRIDGE LEAVE id=8 occ=3/4
+t=2102ms BRIDGE ENTER id=14 dir=FWD occ=4/4
+t=2102ms BRIDGE LEAVE id=5 occ=3/4
+t=2102ms BRIDGE ENTER id=4 dir=FWD occ=4/4
+t=2668ms BRIDGE LEAVE id=15 occ=3/4
+t=2668ms BRIDGE ENTER id=10 dir=FWD occ=4/4
+t=2668ms TOWER QUEUE_JOIN id=8 vip=1 wait_vip=1 wait_norm=0
+t=2668ms TOWER QUEUE_LEAVE id=8 vip=1 inside=1/10 wait_vip=0 wait_norm=0 vip_streak=1
+t=2668ms TOWER ENTER id=8 vip=1 occ=1/10
+t=2977ms BRIDGE LEAVE id=4 occ=3/4
+t=2977ms BRIDGE ENTER id=12 dir=FWD occ=4/4
+t=2977ms TOWER QUEUE_JOIN id=13 vip=1 wait_vip=1 wait_norm=0
+t=2977ms TOWER QUEUE_LEAVE id=13 vip=1 inside=2/10 wait_vip=0 wait_norm=0 vip_streak=2
+t=2977ms TOWER ENTER id=13 vip=1 occ=2/10
+t=2977ms BRIDGE LEAVE id=14 occ=3/4
+t=2977ms BRIDGE ENTER id=24 dir=FWD occ=4/4
+t=2977ms TOWER QUEUE_JOIN id=6 vip=1 wait_vip=1 wait_norm=0
+t=2977ms TOWER QUEUE_LEAVE id=6 vip=1 inside=3/10 wait_vip=0 wait_norm=0 vip_streak=3
+t=2977ms TOWER ENTER id=6 vip=1 occ=3/10
+t=3010ms BRIDGE LEAVE id=16 occ=3/4
+t=3010ms BRIDGE ENTER id=11 dir=FWD occ=4/4
+t=3614ms BRIDGE LEAVE id=10 occ=3/4
+t=3614ms BRIDGE ENTER id=9 dir=FWD occ=4/4
+t=3714ms BRIDGE LEAVE id=12 occ=3/4
+t=3714ms BRIDGE LEAVE id=11 occ=2/4
+t=3714ms GUIDE SEGMENT A->B gid=0
+t=3874ms BRIDGE LEAVE id=24 occ=1/4
+t=4418ms BRIDGE LEAVE id=9 occ=0/4
+t=4418ms BRIDGE BRIDGE_DIR_SET dir=NONE
+t=4418ms GUIDE SEGMENT A->B gid=100000
+t=4949ms TOWER QUEUE_JOIN id=24 vip=1 wait_vip=1 wait_norm=0
+t=4981ms TOWER QUEUE_LEAVE id=24 vip=1 inside=4/10 wait_vip=0 wait_norm=0 vip_streak=4
+t=4981ms TOWER ENTER id=24 vip=1 occ=4/10
+t=5321ms TOWER LEAVE id=13 occ=3/10
+t=5363ms TOWER DENY id=3 reason=GUARD_OF_AGE<=5
+t=5363ms TOWER QUEUE_JOIN id=2 vip=0 wait_vip=0 wait_norm=1
+t=5363ms TOWER QUEUE_LEAVE id=2 vip=0 inside=4/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5363ms TOWER ENTER id=2 vip=0 occ=4/10
+t=5363ms TOWER QUEUE_JOIN id=10 vip=0 wait_vip=0 wait_norm=1
+t=5363ms TOWER QUEUE_LEAVE id=10 vip=0 inside=5/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5363ms TOWER ENTER id=10 vip=0 occ=5/10
+t=5363ms TOWER DENY id=15 reason=AGE<=5
+t=5363ms TOWER QUEUE_JOIN id=16 vip=0 wait_vip=0 wait_norm=1
+t=5364ms TOWER QUEUE_LEAVE id=16 vip=0 inside=6/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5364ms TOWER ENTER id=16 vip=0 occ=6/10
+t=5364ms TOWER QUEUE_JOIN id=5 vip=0 wait_vip=0 wait_norm=1
+t=5364ms TOWER QUEUE_LEAVE id=5 vip=0 inside=7/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5364ms TOWER ENTER id=5 vip=0 occ=7/10
+t=5364ms TOWER QUEUE_JOIN id=9 vip=0 wait_vip=0 wait_norm=1
+t=5364ms TOWER QUEUE_LEAVE id=9 vip=0 inside=8/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5364ms TOWER ENTER id=9 vip=0 occ=8/10
+t=5364ms TOWER QUEUE_JOIN id=11 vip=0 wait_vip=0 wait_norm=1
+t=5364ms TOWER QUEUE_LEAVE id=11 vip=0 inside=9/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5364ms TOWER ENTER id=11 vip=0 occ=9/10
+t=5363ms TOWER DENY id=12 reason=GUARD_OF_AGE<=5
+t=5365ms TOWER QUEUE_JOIN id=14 vip=0 wait_vip=0 wait_norm=1
+t=5365ms TOWER QUEUE_LEAVE id=14 vip=0 inside=10/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5365ms TOWER ENTER id=14 vip=0 occ=10/10
+t=5365ms TOWER QUEUE_JOIN id=7 vip=0 wait_vip=0 wait_norm=1
+t=5363ms TOWER DENY id=4 reason=AGE<=5
+t=5883ms TOWER LEAVE id=8 occ=9/10
+t=5883ms TOWER QUEUE_LEAVE id=7 vip=0 inside=10/10 wait_vip=0 wait_norm=0 vip_streak=0
+t=5883ms TOWER ENTER id=7 vip=0 occ=10/10
+t=6196ms BRIDGE BRIDGE_DIR_SET dir=BWD
+t=6196ms BRIDGE ENTER id=13 dir=BWD occ=1/4
+t=6219ms TOWER LEAVE id=6 occ=9/10
+t=6771ms FERRY QUEUE_JOIN id=8 vip=1 dir=FWD wait_vip=1 wait_norm=0
+t=6771ms FERRY QUEUE_LEAVE id=8 vip=1 dir=FWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=3
+t=6771ms FERRY BOARD id=8 vip=1 dir=FWD occ=1/2
+t=7016ms TOWER LEAVE id=9 occ=8/10
+t=7016ms BRIDGE LEAVE id=13 occ=0/4
+t=7016ms BRIDGE BRIDGE_DIR_SET dir=NONE
+t=7096ms BRIDGE BRIDGE_DIR_SET dir=BWD
+t=7096ms BRIDGE ENTER id=6 dir=BWD occ=1/4
+t=7296ms TOWER LEAVE id=11 occ=7/10
+t=7528ms VIP END id=13
+t=7702ms FERRY UNBOARD id=8 occ=0/2
+t=7761ms TOWER LEAVE id=24 occ=6/10
+t=7761ms TOWER LEAVE id=5 occ=5/10
+t=7902ms TOWER LEAVE id=2 occ=4/10
+t=7974ms TOWER LEAVE id=7 occ=3/10
+t=7974ms GUIDE SEGMENT B->C gid=100000
+t=7974ms TOWER LEAVE id=10 occ=2/10
+t=8109ms TOWER LEAVE id=14 occ=1/10
+t=8109ms BRIDGE LEAVE id=6 occ=0/4
+t=8109ms BRIDGE BRIDGE_DIR_SET dir=NONE
+t=8123ms TOWER LEAVE id=16 occ=0/10
+t=8123ms GUIDE SEGMENT B->C gid=0
+t=8532ms VIP END id=6
+t=8711ms VIP END id=8
+t=8998ms FERRY QUEUE_JOIN id=24 vip=1 dir=FWD wait_vip=1 wait_norm=0
+t=8998ms FERRY QUEUE_LEAVE id=24 vip=1 dir=FWD onboard=1/2 wait_vip=0 wait_norm=0 vip_streak=4
+t=8998ms FERRY BOARD id=24 vip=1 dir=FWD occ=1/2
+t=9034ms FERRY QUEUE_JOIN id=3 vip=0 dir=FWD wait_vip=0 wait_norm=1
+t=9034ms FERRY QUEUE_LEAVE id=3 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
+t=9034ms FERRY BOARD id=3 vip=0 dir=FWD occ=2/2
+t=9034ms FERRY QUEUE_JOIN id=4 vip=0 dir=FWD wait_vip=0 wait_norm=1
+t=9034ms FERRY QUEUE_JOIN id=2 vip=0 dir=FWD wait_vip=0 wait_norm=2
+t=9034ms FERRY QUEUE_JOIN id=7 vip=0 dir=FWD wait_vip=0 wait_norm=3
+t=9034ms FERRY QUEUE_JOIN id=9 vip=0 dir=FWD wait_vip=0 wait_norm=4
+t=9034ms FERRY QUEUE_JOIN id=5 vip=0 dir=FWD wait_vip=0 wait_norm=5
+t=10061ms FERRY UNBOARD id=3 occ=1/2
+t=10061ms FERRY QUEUE_LEAVE id=9 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=4 vip_streak=0
+t=10061ms FERRY BOARD id=9 vip=0 dir=FWD occ=2/2
+t=10061ms FERRY QUEUE_JOIN id=10 vip=0 dir=FWD wait_vip=0 wait_norm=5
+t=10061ms FERRY QUEUE_JOIN id=14 vip=0 dir=FWD wait_vip=0 wait_norm=6
+t=10061ms FERRY QUEUE_JOIN id=11 vip=0 dir=FWD wait_vip=0 wait_norm=7
+t=10061ms FERRY QUEUE_JOIN id=12 vip=0 dir=FWD wait_vip=0 wait_norm=8
+t=10061ms FERRY QUEUE_JOIN id=15 vip=0 dir=FWD wait_vip=0 wait_norm=9
+t=10061ms FERRY QUEUE_JOIN id=16 vip=0 dir=FWD wait_vip=0 wait_norm=10
+t=11376ms FERRY UNBOARD id=24 occ=1/2
+t=11376ms FERRY QUEUE_LEAVE id=2 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=9 vip_streak=0
+t=11376ms FERRY BOARD id=2 vip=0 dir=FWD occ=2/2
+t=11376ms FERRY UNBOARD id=9 occ=1/2
+t=11376ms FERRY QUEUE_LEAVE id=4 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=8 vip_streak=0
+t=11376ms FERRY BOARD id=4 vip=0 dir=FWD occ=2/2
+t=12335ms FERRY UNBOARD id=2 occ=1/2
+t=12335ms FERRY QUEUE_LEAVE id=7 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=7 vip_streak=0
+t=12335ms FERRY BOARD id=7 vip=0 dir=FWD occ=2/2
+t=12335ms FERRY UNBOARD id=4 occ=1/2
+t=12335ms FERRY QUEUE_LEAVE id=12 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=6 vip_streak=0
+t=12335ms FERRY BOARD id=12 vip=0 dir=FWD occ=2/2
+t=12522ms VIP END id=24
+t=13409ms FERRY UNBOARD id=7 occ=1/2
+t=13409ms FERRY QUEUE_LEAVE id=5 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=5 vip_streak=0
+t=13409ms FERRY BOARD id=5 vip=0 dir=FWD occ=2/2
+t=13409ms FERRY UNBOARD id=12 occ=1/2
+t=13409ms FERRY QUEUE_LEAVE id=14 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=4 vip_streak=0
+t=13409ms FERRY BOARD id=14 vip=0 dir=FWD occ=2/2
+t=14319ms FERRY UNBOARD id=5 occ=1/2
+t=14379ms FERRY UNBOARD id=14 occ=0/2
+t=14379ms FERRY QUEUE_LEAVE id=15 vip=0 dir=FWD onboard=1/2 wait_vip=0 wait_norm=3 vip_streak=0
+t=14379ms FERRY BOARD id=15 vip=0 dir=FWD occ=1/2
+t=14379ms GUIDE SEGMENT C->K gid=100000
+t=14379ms FERRY QUEUE_LEAVE id=16 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=2 vip_streak=0
+t=14379ms FERRY BOARD id=16 vip=0 dir=FWD occ=2/2
+t=15179ms CASHIER EXIT id=13
+t=15179ms CASHIER EXIT id=6
+t=15179ms CASHIER EXIT id=8
+t=15179ms CASHIER EXIT id=24
+t=15179ms CASHIER STOP
+t=15294ms FERRY UNBOARD id=15 occ=1/2
+t=15294ms TOURIST RETURN_K id=3 gid=100000
+t=15294ms FERRY QUEUE_LEAVE id=11 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=1 vip_streak=0
+t=15294ms FERRY BOARD id=11 vip=0 dir=FWD occ=2/2
+t=15294ms TOURIST RETURN_K id=2 gid=100000
+t=15294ms TOURIST RETURN_K id=5 gid=100000
+t=15294ms TOURIST RETURN_K id=7 gid=100000
+t=15294ms TOURIST RETURN_K id=9 gid=100000
+t=15294ms TOURIST RETURN_K id=4 gid=100000
+t=16206ms FERRY UNBOARD id=11 occ=1/2
+t=16206ms FERRY QUEUE_LEAVE id=10 vip=0 dir=FWD onboard=2/2 wait_vip=0 wait_norm=0 vip_streak=0
+t=16206ms FERRY BOARD id=10 vip=0 dir=FWD occ=2/2
+t=17110ms FERRY UNBOARD id=10 occ=1/2
+t=17710ms FERRY UNBOARD id=16 occ=0/2
+t=17710ms GUIDE SEGMENT C->K gid=0
+t=17711ms GUIDE GROUP_END guide=1 gid=100000
+t=17711ms GUIDE STOP guide=1
+t=19157ms TOURIST RETURN_K id=10 gid=0
+t=19213ms TOURIST RETURN_K id=11 gid=0
+t=19213ms TOURIST RETURN_K id=15 gid=0
+t=19213ms TOURIST RETURN_K id=16 gid=0
+t=19213ms TOURIST RETURN_K id=12 gid=0
+t=19213ms TOURIST RETURN_K id=14 gid=0
+t=21197ms GUIDE GROUP_END guide=0 gid=0
+t=21197ms GUIDE STOP guide=0

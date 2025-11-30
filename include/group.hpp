@@ -4,14 +4,13 @@
 #include <mutex>
 #include <vector>
 
-#include "tourist.hpp"
+#include "tourist.hpp"   // Step + Tourist
 
-// Sterowanie grupą: przewodnik ustawia krok, turyści wykonują i zgłaszają done.
 struct GroupControl {
     int group_id;
     int guide_id;
 
-    // Wybrana trasa grupy (1 lub 2) – wykorzystywana przez turystów do kierunków MOST/PROM.
+    // 1 lub 2 — ustawiane przez przewodnika, czytane przez turystów (kierunki A/C)
     int route = 1;
 
     std::mutex mu;
