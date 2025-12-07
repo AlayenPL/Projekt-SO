@@ -17,12 +17,9 @@ static inline const char* dir_str(Direction d) {
     return "?";
 }
 
-// Uwaga dot. VIP:
-// - Bridge (A): VIP NIE omija kolejki (w specyfikacji VIP czeka jak inni).
-// - Tower (B) i Ferry (C): VIP omija kolejkę -> implementujemy kolejkę z priorytetem VIP.
-//
-// Dodatkowo wprowadzamy prostą "fairness": po wpuszczeniu VIP określoną liczbę razy z rzędu,
-// jeśli czekają normalni, wpuszczamy normalnego, by uniknąć głodzenia.
+// VIP:
+// - Bridge (A): VIP NIE omija kolejki.
+// - Tower (B) i Ferry (C): VIP omija kolejkę + fairness.
 
 struct Bridge {
     int cap;
@@ -46,17 +43,22 @@ struct Tower {
     std::mutex mu;
     std::condition_variable cv;
 
-    int inside = 0;
-    int waiting_vip = 0;
-    int waiting_norm = 0;
+    int inside = 0;          // liczba osób w środku
+    int waiting_vip = 0;     // liczba osób VIP czekających
+    int waiting_norm = 0;    // liczba osób normalnych czekających
 
     int vip_streak = 0;
-    static constexpr int VIP_BURST = 5; // po tylu VIP z rzędu wpuszczamy normalnego (jeśli czeka)
+    static constexpr int VIP_BURST = 5;
 
     Tower(int cap, Logger& log);
 
+    // per-osoba (VIP path / fallback)
     void enter(int tourist_id, bool vip);
     void leave(int tourist_id);
+
+    // grupowo (zajęcie k miejsc naraz)
+    void enter_group(int group_id, int k, bool vip_like);
+    void leave_group(int group_id, int k);
 };
 
 struct Ferry {
@@ -66,7 +68,7 @@ struct Ferry {
     std::mutex mu;
     std::condition_variable cv;
 
-    int onboard = 0;
+    int onboard = 0;         // liczba osób na pokładzie
     int waiting_vip = 0;
     int waiting_norm = 0;
 
@@ -75,6 +77,11 @@ struct Ferry {
 
     Ferry(int cap, Logger& log);
 
+    // per-osoba (VIP path / fallback)
     void board(int tourist_id, bool vip, Direction d);
     void unboard(int tourist_id);
+
+    // grupowo (zajęcie k miejsc naraz)
+    void board_group(int group_id, int k, bool vip_like, Direction d);
+    void unboard_group(int group_id, int k);
 };
