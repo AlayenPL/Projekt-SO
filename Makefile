@@ -1,20 +1,14 @@
-CXX := g++
-CXXFLAGS := -std=c++20 -O2 -Wall -Wextra -pthread -Iinclude
-LDFLAGS := -pthread
+CXX=g++
+CXXFLAGS=-std=c++17 -Wall -Wextra -O2
+INCLUDES=-Iinclude
+SRCS=src/main.cpp src/config.cpp src/ipc_sem.cpp
+OUT=sim
 
-BIN := park_sim
-SRC := $(wildcard src/*.cpp)
-OBJ := $(SRC:.cpp=.o)
+all:
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SRCS) -o $(OUT)
 
-all: $(BIN)
-
-$(BIN): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-src/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+run:
+	./$(OUT) --tourists=5 --guides=1 --capacity=2
 
 clean:
-	rm -f $(BIN) $(OBJ)
-
-.PHONY: all clean
+	rm -f $(OUT)
