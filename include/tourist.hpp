@@ -5,64 +5,82 @@
 #include <mutex>
 #include <thread>
 
-struct Park;
+#include "resources.hpp"   // Direction + zasoby
+// Step trzymamy w tym pliku – jest używany w Tourist i GroupControl.
+
+class Park;
 struct GroupControl;
 
-enum class Step { NONE=0, GO_A=1, GO_B=2, GO_C=3, RETURN_K=4, EXIT=5 };
+enum class Step {
+    NONE,
+    GO_A,
+    GO_B,
+    GO_C,
+    RETURN_K,
+    EXIT
+};
 
-static inline const char* step_str(Step s) {
-    switch (s) {
-        case Step::NONE: return "NONE";
-        case Step::GO_A: return "A";
-        case Step::GO_B: return "B";
-        case Step::GO_C: return "C";
-        case Step::RETURN_K: return "K";
-        case Step::EXIT: return "EXIT";
-    }
-    return "?";
-}
-
-struct Tourist {
+class Tourist {
+public:
     int id;
-    int age;      // years
+    int age;
     bool vip;
 
     Park* park;
 
-    // Admission
-    std::mutex mu;
-    std::condition_variable cv;
-    bool admitted = false;
-    bool rejected = false;
-
-    // Group assignment
+    // Grupa / przewodnik
     int group_id = -1;
     int guide_id = -1;
     GroupControl* group = nullptr;
 
-    // Control flow set by guide
-    std::atomic<bool> abort_to_k{false};   // signal2
-    std::atomic<bool> tower_evacuate{false}; // signal1
+    // Opiekun (dla dzieci <15 w A/B/C) + blokada “opiekun dziecka <=5 nie wchodzi do wieży”
+    Tourist* guardian = nullptr;
+    std::atomic<bool> no_guard{false};
+    std::atomic<bool> guardian_of_u5{false};
 
-    // next step from guide
-    Step next_step = Step::NONE;
-    bool step_ready = false;
+    // Flagi awaryjne
+    std::atomic<bool> abort_to_k{false};
+    std::atomic<bool> tower_evacuate{false};
 
-    std::thread thr;
+    Tourist(int id_, int age_, bool vip_, Park* park_);
 
-    Tourist(int id, int age, bool vip, Park* park);
     void start();
     void join();
 
-    // Called by cashier
+    // Cashier / park
     void on_admitted();
     void on_rejected();
 
-    // Called by guide
-    void assign_to_group(int group_id, int guide_id);
+    // Group assignment
+    void assign_to_group(int gid, int pid);
+
+    // Step dispatch
     void set_step(Step s);
 
+    // Guardian logic
+    void set_guardian(Tourist* g, bool is_u5_child);
+    void guardian_notify_wards_ready(int epoch);
+    void child_wait_for_guardian_ready(int epoch, const char* where_tag);
+
 private:
+    std::thread thr;
+
+    std::mutex mu;
+    std::condition_variable cv;
+
+    bool admitted = false;
+    bool rejected = false;
+
+    // krok przewodnika
+    Step next_step = Step::NONE;
+    bool step_ready = false;
+    int step_epoch = 0;
+
+    // synchronizacja “opiekun gotowy”
+    std::mutex escort_mu;
+    std::condition_variable escort_cv;
+    int escort_epoch = 0;
+
     void run();
     void run_vip();
     void run_guided();

@@ -1,28 +1,50 @@
 #include "logger.hpp"
 
-#include <iomanip>
-#include <sstream>
+#include <filesystem>
 #include <stdexcept>
+#include <sstream>
+#include <iostream>
+
+Logger* Logger::g_logger_ = nullptr;
 
 Logger::Logger(const std::string& path)
-    : out_(path, std::ios::out | std::ios::trunc), t0_(std::chrono::steady_clock::now()) {
-    if (!out_) {
-        throw std::runtime_error("Cannot open log file: " + path);
+{
+    namespace fs = std::filesystem;
+
+    // utwórz katalog nadrzędny, jeśli trzeba
+    fs::path p(path);
+    if (p.has_parent_path()) {
+        std::error_code ec;
+        fs::create_directories(p.parent_path(), ec);
+        // jeśli create_directories się nie uda, i tak spróbujemy otworzyć plik, ale z lepszym błędem
     }
+
+    out_.open(path, std::ios::out | std::ios::trunc);
+    if (!out_.is_open()) {
+        std::ostringstream oss;
+        oss << "Cannot open log file: " << path
+            << " (cwd=" << fs::current_path().string() << ")";
+        throw std::runtime_error(oss.str());
+    }
+
+    t0_ = std::chrono::steady_clock::now();
+
+    // ustaw globalny logger (jeśli korzystasz z Logger::log())
+    g_logger_ = this;
 }
 
-void Logger::log(const std::string& line) {
+void Logger::log_ts(const std::string& tag, const std::string& msg)
+{
+    auto now = std::chrono::steady_clock::now();
+    auto ms  = std::chrono::duration_cast<std::chrono::milliseconds>(now - t0_).count();
+
     std::lock_guard<std::mutex> lk(mu_);
-    out_ << line << "\n";
+    out_ << "t=" << ms << "ms " << tag << " " << msg << "\n";
     out_.flush();
 }
 
-void Logger::log_ts(const std::string& tag, const std::string& msg) {
-    using namespace std::chrono;
-    auto ms = duration_cast<milliseconds>(steady_clock::now() - t0_).count();
-
-    std::ostringstream oss;
-    oss << "t=" << ms << "ms " << tag;
-    if (!msg.empty()) oss << " " << msg;
-    log(oss.str());
+void Logger::log(const std::string& msg)
+{
+    if (!g_logger_) return;
+    g_logger_->log_ts("LOG", msg);
 }
