@@ -58,7 +58,7 @@ void Tourist::set_guardian(Tourist* g, bool is_u5_child) {
     }
 }
 
-// Helpers
+// Helpers (VIP path)
 static void sleep_interruptible_ms(int total_ms, std::atomic<bool>& abort_flag) {
     int slice = 50;
     int slept = 0;
@@ -161,9 +161,6 @@ void Tourist::run_vip() {
         park->ferry.unboard(id);
     };
 
-    // Route-aware directions:
-    // - Bridge(A): route 1 => FORWARD (K->A), route 2 => BACKWARD (B->A)
-    // - Ferry(C):  route 1 => FORWARD (B->C), route 2 => BACKWARD (K->C)
     Direction bridge_dir = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
     Direction ferry_dir  = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
 
@@ -228,100 +225,8 @@ void Tourist::run_guided() {
             s = Step::RETURN_K;
         }
 
-        auto deny_no_guard = [&](const char* where) {
-            park->log.log_ts("GUARD",
-                             std::string("DENY_NO_GUARD id=") + std::to_string(id) +
-                             " age=" + std::to_string(age) +
-                             " where=" + where +
-                             " gid=" + std::to_string(group_id));
-        };
-
-        int route = (group ? group->route : 1);
-        Direction bridge_dir = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
-        Direction ferry_dir  = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
-
-        switch (s) {
-            case Step::GO_A: {
-                if (age < 15) {
-                    if (no_guard.load() || guardian == nullptr) {
-                        deny_no_guard("A");
-                        break;
-                    }
-                    child_wait_for_guardian_ready(epoch, "A");
-                } else {
-                    guardian_notify_wards_ready(epoch);
-                }
-
-                park->bridge.enter(id, bridge_dir);
-                int ms = park->rand_int(park->cfg.bridge_min_ms, park->cfg.bridge_max_ms);
-                std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-                park->bridge.leave(id);
-                break;
-            }
-
-            case Step::GO_B: {
-                if (age <= 5) {
-                    park->log.log_ts("TOWER", "DENY id=" + std::to_string(id) + " reason=AGE<=5");
-                    break;
-                }
-                if (guardian_of_u5.load()) {
-                    park->log.log_ts("TOWER", "DENY id=" + std::to_string(id) + " reason=GUARD_OF_AGE<=5");
-                    break;
-                }
-
-                if (age < 15) {
-                    if (no_guard.load() || guardian == nullptr) {
-                        deny_no_guard("B");
-                        break;
-                    }
-                    child_wait_for_guardian_ready(epoch, "B");
-                } else {
-                    guardian_notify_wards_ready(epoch);
-                }
-
-                park->tower.enter(id, false);
-                int ms = park->rand_int(park->cfg.tower_min_ms, park->cfg.tower_max_ms);
-
-                if (tower_evacuate.load()) {
-                    park->log.log_ts("TOWER",
-                                     "EVACUATE id=" + std::to_string(id) +
-                                     " gid=" + std::to_string(group_id));
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                } else {
-                    sleep_interruptible_ms(ms, tower_evacuate);
-                }
-                park->tower.leave(id);
-                break;
-            }
-
-            case Step::GO_C: {
-                if (age < 15) {
-                    if (no_guard.load() || guardian == nullptr) {
-                        deny_no_guard("C");
-                        break;
-                    }
-                    child_wait_for_guardian_ready(epoch, "C");
-                } else {
-                    guardian_notify_wards_ready(epoch);
-                }
-
-                park->ferry.board(id, false, ferry_dir);
-                std::this_thread::sleep_for(std::chrono::milliseconds(park->cfg.ferry_T_ms));
-                park->ferry.unboard(id);
-                break;
-            }
-
-            case Step::RETURN_K: {
-                park->log.log_ts("TOURIST",
-                                 "RETURN_K id=" + std::to_string(id) +
-                                 " gid=" + std::to_string(group_id));
-                std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                break;
-            }
-
-            default:
-                break;
-        }
+        // Centralne wykonanie kroku w Parku (spójny punkt dla dalszej refaktoryzacji grupowej)
+        park->do_step(this, s, epoch);
 
         if (group) group->mark_done();
     }

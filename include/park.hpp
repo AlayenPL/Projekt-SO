@@ -13,10 +13,7 @@
 #include "config.hpp"
 #include "logger.hpp"
 #include "resources.hpp"
-
-#include "group.hpp"
-
-struct Tourist;
+#include "tourist.hpp"   // Step + Tourist
 
 struct Park {
     Config cfg;
@@ -71,6 +68,9 @@ struct Park {
     std::vector<Tourist*> dequeue_group(int M);
 
     void report_exit(int tourist_id);
+
+    // KROK SYMULACJI: wykonanie Step przez turystę (guided)
+    void do_step(Tourist* t, Step s, int epoch);
 
 private:
     void cashier_loop();

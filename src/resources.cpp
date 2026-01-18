@@ -2,10 +2,13 @@
 
 #include <sstream>
 
+// ------------------------- BRIDGE (A) -------------------------
+
 Bridge::Bridge(int cap_, Logger& log_) : cap(cap_), log(log_) {}
 
 void Bridge::enter(int tourist_id, Direction d) {
     std::unique_lock<std::mutex> lk(mu);
+
     cv.wait(lk, [&]{
         bool dir_ok = (dir == Direction::NONE || dir == d);
         bool cap_ok = (on_bridge < cap);
@@ -26,10 +29,15 @@ void Bridge::enter(int tourist_id, Direction d) {
             << " occ=" << on_bridge << "/" << cap;
         log.log_ts("BRIDGE", oss.str());
     }
+
+    // WAŻNE: pozwól kolejnym wejść aż do cap (w przeciwnym razie często wpuszczało „po 1”)
+    lk.unlock();
+    cv.notify_all();
 }
 
 void Bridge::leave(int tourist_id) {
     std::unique_lock<std::mutex> lk(mu);
+
     --on_bridge;
     {
         std::ostringstream oss;
@@ -69,12 +77,14 @@ void Tower::enter(int tourist_id, bool vip) {
         if (inside >= cap) return false;
 
         if (vip) {
-            // VIP omija kolejkę: jeśli jest miejsce, może wejść (z ewentualną fairness później).
+            // FAIRNESS: jeśli czekają normalni i VIP był wpuszczany zbyt długo,
+            // VIP musi ustąpić aż wejdzie przynajmniej jeden normalny (reset vip_streak).
+            if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
             return true;
         } else {
-            // Normalny wchodzi tylko gdy:
-            // - nie ma oczekujących VIP, lub
-            // - VIP byli wpuszczani zbyt długo i chcemy uniknąć głodzenia normalnych.
+            // Normalny wchodzi, gdy:
+            // - nie ma VIP w kolejce, albo
+            // - VIP byli wpuszczani zbyt długo (vip_streak >= VIP_BURST)
             if (waiting_vip == 0) return true;
             if (vip_streak >= VIP_BURST) return true;
             return false;
@@ -107,6 +117,10 @@ void Tower::enter(int tourist_id, bool vip) {
             << " occ=" << inside << "/" << cap;
         log.log_ts("TOWER", oss.str());
     }
+
+    // WAŻNE: po zmianie inside/vip_streak obudź innych (np. VIP po wejściu normalnego)
+    lk.unlock();
+    cv.notify_all();
 }
 
 void Tower::leave(int tourist_id) {
@@ -149,6 +163,8 @@ void Ferry::board(int tourist_id, bool vip, Direction d) {
         if (onboard >= cap) return false;
 
         if (vip) {
+            // FAIRNESS: analogicznie do Tower
+            if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
             return true;
         } else {
             if (waiting_vip == 0) return true;
@@ -184,6 +200,10 @@ void Ferry::board(int tourist_id, bool vip, Direction d) {
             << " occ=" << onboard << "/" << cap;
         log.log_ts("FERRY", oss.str());
     }
+
+    // WAŻNE: po zmianie onboard/vip_streak obudź innych
+    lk.unlock();
+    cv.notify_all();
 }
 
 void Ferry::unboard(int tourist_id) {
