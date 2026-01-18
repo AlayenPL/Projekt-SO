@@ -8,7 +8,6 @@ Bridge::Bridge(int cap_, Logger& log_) : cap(cap_), log(log_) {}
 
 void Bridge::enter(int tourist_id, Direction d) {
     std::unique_lock<std::mutex> lk(mu);
-
     cv.wait(lk, [&]{
         bool dir_ok = (dir == Direction::NONE || dir == d);
         bool cap_ok = (on_bridge < cap);
@@ -30,7 +29,6 @@ void Bridge::enter(int tourist_id, Direction d) {
         log.log_ts("BRIDGE", oss.str());
     }
 
-    // WAŻNE: pozwól kolejnym wejść aż do cap (w przeciwnym razie często wpuszczało „po 1”)
     lk.unlock();
     cv.notify_all();
 }
@@ -77,48 +75,32 @@ void Tower::enter(int tourist_id, bool vip) {
         if (inside >= cap) return false;
 
         if (vip) {
-            // FAIRNESS: jeśli czekają normalni i VIP był wpuszczany zbyt długo,
-            // VIP musi ustąpić aż wejdzie przynajmniej jeden normalny (reset vip_streak).
             if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
             return true;
         } else {
-            // Normalny wchodzi, gdy:
-            // - nie ma VIP w kolejce, albo
-            // - VIP byli wpuszczani zbyt długo (vip_streak >= VIP_BURST)
             if (waiting_vip == 0) return true;
             if (vip_streak >= VIP_BURST) return true;
             return false;
         }
     });
 
-    // schodzimy z kolejki
     if (vip) --waiting_vip;
     else     --waiting_norm;
 
-    // wejście
     ++inside;
     if (vip) ++vip_streak;
     else     vip_streak = 0;
 
     {
         std::ostringstream oss;
-        oss << "QUEUE_LEAVE id=" << tourist_id
-            << " vip=" << (vip ? 1 : 0)
-            << " inside=" << inside << "/" << cap
+        oss << "ENTER id=" << tourist_id << " vip=" << (vip ? 1 : 0)
+            << " occ=" << inside << "/" << cap
             << " wait_vip=" << waiting_vip
             << " wait_norm=" << waiting_norm
             << " vip_streak=" << vip_streak;
         log.log_ts("TOWER", oss.str());
     }
 
-    {
-        std::ostringstream oss;
-        oss << "ENTER id=" << tourist_id << " vip=" << (vip ? 1 : 0)
-            << " occ=" << inside << "/" << cap;
-        log.log_ts("TOWER", oss.str());
-    }
-
-    // WAŻNE: po zmianie inside/vip_streak obudź innych (np. VIP po wejściu normalnego)
     lk.unlock();
     cv.notify_all();
 }
@@ -131,6 +113,81 @@ void Tower::leave(int tourist_id) {
     {
         std::ostringstream oss;
         oss << "LEAVE id=" << tourist_id
+            << " occ=" << inside << "/" << cap;
+        log.log_ts("TOWER", oss.str());
+    }
+
+    lk.unlock();
+    cv.notify_all();
+}
+
+// ---- Tower: wejście grupowe ----
+void Tower::enter_group(int group_id, int k, bool vip_like) {
+    if (k <= 0) return;
+
+    std::unique_lock<std::mutex> lk(mu);
+
+    if (vip_like) waiting_vip += k;
+    else          waiting_norm += k;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_QUEUE_JOIN gid=" << group_id
+            << " k=" << k
+            << " vip_like=" << (vip_like ? 1 : 0)
+            << " wait_vip=" << waiting_vip
+            << " wait_norm=" << waiting_norm;
+        log.log_ts("TOWER", oss.str());
+    }
+
+    cv.wait(lk, [&]{
+        if (inside + k > cap) return false;
+
+        if (vip_like) {
+            if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
+            return true;
+        } else {
+            if (waiting_vip == 0) return true;
+            if (vip_streak >= VIP_BURST) return true;
+            return false;
+        }
+    });
+
+    if (vip_like) waiting_vip -= k;
+    else          waiting_norm -= k;
+
+    inside += k;
+    if (vip_like) ++vip_streak;
+    else          vip_streak = 0;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_ENTER gid=" << group_id
+            << " k=" << k
+            << " vip_like=" << (vip_like ? 1 : 0)
+            << " occ=" << inside << "/" << cap
+            << " wait_vip=" << waiting_vip
+            << " wait_norm=" << waiting_norm
+            << " vip_streak=" << vip_streak;
+        log.log_ts("TOWER", oss.str());
+    }
+
+    lk.unlock();
+    cv.notify_all();
+}
+
+void Tower::leave_group(int group_id, int k) {
+    if (k <= 0) return;
+
+    std::unique_lock<std::mutex> lk(mu);
+
+    inside -= k;
+    if (inside < 0) inside = 0;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_LEAVE gid=" << group_id
+            << " k=" << k
             << " occ=" << inside << "/" << cap;
         log.log_ts("TOWER", oss.str());
     }
@@ -163,7 +220,6 @@ void Ferry::board(int tourist_id, bool vip, Direction d) {
         if (onboard >= cap) return false;
 
         if (vip) {
-            // FAIRNESS: analogicznie do Tower
             if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
             return true;
         } else {
@@ -182,26 +238,16 @@ void Ferry::board(int tourist_id, bool vip, Direction d) {
 
     {
         std::ostringstream oss;
-        oss << "QUEUE_LEAVE id=" << tourist_id
+        oss << "BOARD id=" << tourist_id
             << " vip=" << (vip ? 1 : 0)
             << " dir=" << dir_str(d)
-            << " onboard=" << onboard << "/" << cap
+            << " occ=" << onboard << "/" << cap
             << " wait_vip=" << waiting_vip
             << " wait_norm=" << waiting_norm
             << " vip_streak=" << vip_streak;
         log.log_ts("FERRY", oss.str());
     }
 
-    {
-        std::ostringstream oss;
-        oss << "BOARD id=" << tourist_id
-            << " vip=" << (vip ? 1 : 0)
-            << " dir=" << dir_str(d)
-            << " occ=" << onboard << "/" << cap;
-        log.log_ts("FERRY", oss.str());
-    }
-
-    // WAŻNE: po zmianie onboard/vip_streak obudź innych
     lk.unlock();
     cv.notify_all();
 }
@@ -214,6 +260,83 @@ void Ferry::unboard(int tourist_id) {
     {
         std::ostringstream oss;
         oss << "UNBOARD id=" << tourist_id
+            << " occ=" << onboard << "/" << cap;
+        log.log_ts("FERRY", oss.str());
+    }
+
+    lk.unlock();
+    cv.notify_all();
+}
+
+// ---- Ferry: wejście grupowe ----
+void Ferry::board_group(int group_id, int k, bool vip_like, Direction d) {
+    if (k <= 0) return;
+
+    std::unique_lock<std::mutex> lk(mu);
+
+    if (vip_like) waiting_vip += k;
+    else          waiting_norm += k;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_QUEUE_JOIN gid=" << group_id
+            << " k=" << k
+            << " vip_like=" << (vip_like ? 1 : 0)
+            << " dir=" << dir_str(d)
+            << " wait_vip=" << waiting_vip
+            << " wait_norm=" << waiting_norm;
+        log.log_ts("FERRY", oss.str());
+    }
+
+    cv.wait(lk, [&]{
+        if (onboard + k > cap) return false;
+
+        if (vip_like) {
+            if (waiting_norm > 0 && vip_streak >= VIP_BURST) return false;
+            return true;
+        } else {
+            if (waiting_vip == 0) return true;
+            if (vip_streak >= VIP_BURST) return true;
+            return false;
+        }
+    });
+
+    if (vip_like) waiting_vip -= k;
+    else          waiting_norm -= k;
+
+    onboard += k;
+    if (vip_like) ++vip_streak;
+    else          vip_streak = 0;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_BOARD gid=" << group_id
+            << " k=" << k
+            << " vip_like=" << (vip_like ? 1 : 0)
+            << " dir=" << dir_str(d)
+            << " occ=" << onboard << "/" << cap
+            << " wait_vip=" << waiting_vip
+            << " wait_norm=" << waiting_norm
+            << " vip_streak=" << vip_streak;
+        log.log_ts("FERRY", oss.str());
+    }
+
+    lk.unlock();
+    cv.notify_all();
+}
+
+void Ferry::unboard_group(int group_id, int k) {
+    if (k <= 0) return;
+
+    std::unique_lock<std::mutex> lk(mu);
+
+    onboard -= k;
+    if (onboard < 0) onboard = 0;
+
+    {
+        std::ostringstream oss;
+        oss << "GROUP_UNBOARD gid=" << group_id
+            << " k=" << k
             << " occ=" << onboard << "/" << cap;
         log.log_ts("FERRY", oss.str());
     }
