@@ -23,7 +23,6 @@ double Park::rand01() {
     return dist(rng);
 }
 
-// Helpers lokalne dla Park::do_step
 static Direction dir_from_route(int route, Direction d_for_route1, Direction d_for_route2) {
     return (route == 1) ? d_for_route1 : d_for_route2;
 }
@@ -40,91 +39,174 @@ static void sleep_interruptible_ms(int total_ms, std::atomic<bool>& abort_flag) 
 }
 
 void Park::do_step(Tourist* t, Step s, int epoch) {
-    auto deny_no_guard = [&](const char* where) {
+    auto deny_no_guard_for = [&](Tourist* who, const char* where) {
         log.log_ts("GUARD",
-                   std::string("DENY_NO_GUARD id=") + std::to_string(t->id) +
-                   " age=" + std::to_string(t->age) +
+                   std::string("DENY_NO_GUARD id=") + std::to_string(who->id) +
+                   " age=" + std::to_string(who->age) +
                    " where=" + where +
-                   " gid=" + std::to_string(t->group_id));
+                   " gid=" + std::to_string(who->group_id));
     };
 
     int route = (t->group ? t->group->route : 1);
 
-    // Route-aware directions:
-    // Bridge(A): route 1 => FORWARD, route 2 => BACKWARD
-    // Ferry(C):  route 1 => FORWARD, route 2 => BACKWARD
     Direction bridge_dir = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
     Direction ferry_dir  = dir_from_route(route, Direction::FORWARD, Direction::BACKWARD);
 
     switch (s) {
         case Step::GO_A: {
-            if (t->age < 15) {
-                if (t->no_guard.load() || t->guardian == nullptr) {
-                    deny_no_guard("A");
-                    break;
+            // Bridge nadal "symbolicznie" (1 osoba), ale grupa logicznie razem.
+            auto g = t->group;
+            if (!g) {
+                bridge.enter(t->id, bridge_dir);
+                int ms = rand_int(cfg.bridge_min_ms, cfg.bridge_max_ms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+                bridge.leave(t->id);
+                break;
+            }
+
+            if (!g->bridge_try_become_coordinator(epoch, t->id)) {
+                g->bridge_wait_done(epoch);
+                break;
+            }
+
+            // Log DENY dla dzieci bez opiekuna (A)
+            for (auto* m : g->members) {
+                if (!m) continue;
+                if (m->age < 15) {
+                    if (m->no_guard.load() || m->guardian == nullptr) {
+                        deny_no_guard_for(m, "A");
+                    }
                 }
-                t->child_wait_for_guardian_ready(epoch, "A");
-            } else {
-                t->guardian_notify_wards_ready(epoch);
             }
 
             bridge.enter(t->id, bridge_dir);
             int ms = rand_int(cfg.bridge_min_ms, cfg.bridge_max_ms);
             std::this_thread::sleep_for(std::chrono::milliseconds(ms));
             bridge.leave(t->id);
+
+            g->bridge_finish(epoch);
             break;
         }
 
         case Step::GO_B: {
-            if (t->age <= 5) {
-                log.log_ts("TOWER", "DENY id=" + std::to_string(t->id) + " reason=AGE<=5");
-                break;
-            }
-            if (t->guardian_of_u5.load()) {
-                log.log_ts("TOWER", "DENY id=" + std::to_string(t->id) + " reason=GUARD_OF_AGE<=5");
-                break;
-            }
-
-            if (t->age < 15) {
-                if (t->no_guard.load() || t->guardian == nullptr) {
-                    deny_no_guard("B");
+            auto g = t->group;
+            if (!g) {
+                if (t->age <= 5) {
+                    log.log_ts("TOWER", "DENY id=" + std::to_string(t->id) + " reason=AGE<=5");
                     break;
                 }
-                t->child_wait_for_guardian_ready(epoch, "B");
-            } else {
-                t->guardian_notify_wards_ready(epoch);
+                if (t->guardian_of_u5.load()) {
+                    log.log_ts("TOWER", "DENY id=" + std::to_string(t->id) + " reason=GUARD_OF_AGE<=5");
+                    break;
+                }
+                tower.enter(t->id, t->vip);
+                int ms = rand_int(cfg.tower_min_ms, cfg.tower_max_ms);
+                sleep_interruptible_ms(ms, t->tower_evacuate);
+                tower.leave(t->id);
+                break;
             }
 
-            tower.enter(t->id, t->vip);
-            int ms = rand_int(cfg.tower_min_ms, cfg.tower_max_ms);
+            if (!g->tower_try_become_coordinator(epoch, t->id)) {
+                g->tower_wait_done(epoch);
+                break;
+            }
 
+            // Policz ilu realnie wchodzi na wieżę (k)
+            int k = 0;
+            for (auto* m : g->members) {
+                if (!m) continue;
+
+                if (m->age <= 5) {
+                    log.log_ts("TOWER", "DENY id=" + std::to_string(m->id) + " reason=AGE<=5");
+                    continue;
+                }
+                if (m->guardian_of_u5.load()) {
+                    log.log_ts("TOWER", "DENY id=" + std::to_string(m->id) + " reason=GUARD_OF_AGE<=5");
+                    continue;
+                }
+
+                if (m->age < 15) {
+                    if (m->no_guard.load() || m->guardian == nullptr) {
+                        deny_no_guard_for(m, "B");
+                        continue;
+                    }
+                    // Jeśli opiekun nie może wejść na wieżę, dziecko też odpada
+                    if (m->guardian->guardian_of_u5.load()) {
+                        log.log_ts("TOWER", "DENY id=" + std::to_string(m->id) + " reason=GUARD_CANNOT_TOWER");
+                        continue;
+                    }
+                }
+
+                ++k;
+            }
+
+            if (k <= 0) {
+                log.log_ts("TOWER", "GROUP_SKIP gid=" + std::to_string(t->group_id) + " reason=NO_ELIGIBLE");
+                g->tower_finish(epoch);
+                break;
+            }
+
+            // Guided grupa jest non-VIP => vip_like = false
+            tower.enter_group(t->group_id, k, false);
+
+            int ms = rand_int(cfg.tower_min_ms, cfg.tower_max_ms);
             if (t->tower_evacuate.load()) {
                 log.log_ts("TOWER",
-                           "EVACUATE id=" + std::to_string(t->id) +
-                           " gid=" + std::to_string(t->group_id));
+                           "EVACUATE_GROUP gid=" + std::to_string(t->group_id) +
+                           " k=" + std::to_string(k));
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             } else {
                 sleep_interruptible_ms(ms, t->tower_evacuate);
             }
 
-            tower.leave(t->id);
+            tower.leave_group(t->group_id, k);
+            g->tower_finish(epoch);
             break;
         }
 
         case Step::GO_C: {
-            if (t->age < 15) {
-                if (t->no_guard.load() || t->guardian == nullptr) {
-                    deny_no_guard("C");
-                    break;
+            auto g = t->group;
+            if (!g) {
+                if (t->age < 15) {
+                    if (t->no_guard.load() || t->guardian == nullptr) {
+                        deny_no_guard_for(t, "C");
+                        break;
+                    }
                 }
-                t->child_wait_for_guardian_ready(epoch, "C");
-            } else {
-                t->guardian_notify_wards_ready(epoch);
+                ferry.board(t->id, t->vip, ferry_dir);
+                std::this_thread::sleep_for(std::chrono::milliseconds(cfg.ferry_T_ms));
+                ferry.unboard(t->id);
+                break;
             }
 
-            ferry.board(t->id, t->vip, ferry_dir);
+            if (!g->ferry_try_become_coordinator(epoch, t->id)) {
+                g->ferry_wait_done(epoch);
+                break;
+            }
+
+            int k = 0;
+            for (auto* m : g->members) {
+                if (!m) continue;
+                if (m->age < 15) {
+                    if (m->no_guard.load() || m->guardian == nullptr) {
+                        deny_no_guard_for(m, "C");
+                        continue;
+                    }
+                }
+                ++k;
+            }
+
+            if (k <= 0) {
+                log.log_ts("FERRY", "GROUP_SKIP gid=" + std::to_string(t->group_id) + " reason=NO_ELIGIBLE");
+                g->ferry_finish(epoch);
+                break;
+            }
+
+            ferry.board_group(t->group_id, k, false, ferry_dir);
             std::this_thread::sleep_for(std::chrono::milliseconds(cfg.ferry_T_ms));
-            ferry.unboard(t->id);
+            ferry.unboard_group(t->group_id, k);
+
+            g->ferry_finish(epoch);
             break;
         }
 
@@ -154,7 +236,6 @@ void Park::stop() {
     group_cv.notify_all();
     exit_cv.notify_all();
 
-    // Odrzuć wszystkich czekających na grupę
     {
         std::lock_guard<std::mutex> lk(group_mu);
         for (auto* t : group_wait) t->on_rejected();
@@ -251,7 +332,6 @@ void Park::cashier_loop() {
 
         t->on_admitted();
 
-        // Zbierz zaległe wyjścia
         {
             std::unique_lock<std::mutex> lk(exit_mu);
             while (!exit_ids.empty()) {
@@ -262,7 +342,6 @@ void Park::cashier_loop() {
         }
     }
 
-    // Drain
     {
         std::unique_lock<std::mutex> lk(exit_mu);
         while (!exit_ids.empty()) {
@@ -293,7 +372,6 @@ void Park::guide_loop(int guide_id) {
             t->assign_to_group(gid, guide_id);
         }
 
-        // --- Guardian assignment ---
         std::vector<Tourist*> adults;
         std::vector<Tourist*> children;
         adults.reserve(members.size());
@@ -322,7 +400,6 @@ void Park::guide_loop(int guide_id) {
                            " gid=" + std::to_string(gid));
             }
         }
-        // --- end guardian assignment ---
 
         int route = rand_int(1, 2);
         group->route = route;
