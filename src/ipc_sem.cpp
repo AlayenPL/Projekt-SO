@@ -2,16 +2,13 @@
 
 #include <cerrno>
 #include <cstdio>
-#include <cstring>
 
 #include <sys/ipc.h>
 #include <sys/sem.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 #ifndef SEMUN_DEFINED
-// Some libcs don't declare union semun in headers.
 union semun {
     int val;
     struct semid_ds* buf;
@@ -63,7 +60,7 @@ int SysVSemaphore::create_or_open(const char* token_path, int proj_id, int initi
     }
 
     if (errno != EEXIST) {
-        perror("semget(IPC_CREAT|IPC_EXCL)");
+        perror("semget(create)");
         return -1;
     }
 
@@ -72,7 +69,6 @@ int SysVSemaphore::create_or_open(const char* token_path, int proj_id, int initi
         perror("semget(open)");
         return -1;
     }
-
     semid_ = semid;
     return 0;
 }

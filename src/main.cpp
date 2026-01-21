@@ -1,4 +1,4 @@
-// main.cpp - Step IPC1: fork+exec + forward args + guide role + SysV semaphore capacity gate
+// main.cpp - IPC2 fixed: semaphore gate + shared memory stats + message-queue bridge server
 #include <iostream>
 #include <vector>
 #include <string>
@@ -14,6 +14,8 @@
 
 #include "config.hpp"
 #include "ipc_sem.hpp"
+#include "ipc_shm.hpp"
+#include "ipc_msg.hpp"
 
 static const char* get_arg(int argc, char** argv, const char* key) {
     size_t klen = std::strlen(key);
@@ -51,7 +53,7 @@ static std::vector<std::string> build_exec_args(
     char** argv
 ) {
     std::vector<std::string> out;
-    out.reserve((size_t)argc + 4);
+    out.reserve((size_t)argc + 6);
 
     out.emplace_back(self);
     out.emplace_back(std::string("--role=") + role);
@@ -62,7 +64,6 @@ static std::vector<std::string> build_exec_args(
         if (has_prefix(argv[i], "--id=")) continue;
         out.emplace_back(argv[i]);
     }
-
     return out;
 }
 
@@ -74,44 +75,26 @@ static std::vector<char*> to_exec_argv(std::vector<std::string>& args) {
     return out;
 }
 
-static const char* SEM_TOKEN_PATH = "/tmp/park_sim.semkey";
-static const int   SEM_PROJ_ID    = 0x42;
-
-static void atomic_log_line(const char* role, int id) {
-    char buf[200];
+static void atomic_log_line(const char* tag, int id) {
+    char buf[220];
     int n = std::snprintf(buf, sizeof(buf),
                           "[%s] pid=%d id=%d\n",
-                          role, (int)getpid(), id);
+                          tag, (int)getpid(), id);
     if (n > 0) (void)!write(STDERR_FILENO, buf, (size_t)n);
 }
 
-static int run_tourist_process(int id, const Config& cfg) {
-    (void)cfg;
+// Token files (ftok); created as 0600, removed by main at end.
+static const char* SEM_CAP_TOKEN  = "/tmp/park_sim.semcap";
+static const int   SEM_CAP_PROJ   = 0x11;
 
-    SysVSemaphore sem;
-    if (sem.create_or_open(SEM_TOKEN_PATH, SEM_PROJ_ID, 1, 0600) < 0) {
-        return 1;
-    }
+static const char* SEM_MTX_TOKEN  = "/tmp/park_sim.semmtx";
+static const int   SEM_MTX_PROJ   = 0x12;
 
-    if (sem.down() < 0) return 1;
+static const char* SHM_TOKEN      = "/tmp/park_sim.shmkey";
+static const int   SHM_PROJ       = 0x21;
 
-    atomic_log_line("tourist-enter", id);
-
-    // TODO: plug existing Tourist logic here
-
-    atomic_log_line("tourist-exit", id);
-
-    if (sem.up() < 0) return 1;
-
-    return 0;
-}
-
-static int run_guide_process(int id, const Config& cfg) {
-    (void)cfg;
-    atomic_log_line("guide", id);
-    // TODO: plug existing Guide logic here
-    return 0;
-}
+static const char* MSG_TOKEN      = "/tmp/park_sim.msgkey";
+static const int   MSG_PROJ       = 0x31;
 
 static std::vector<pid_t> g_children;
 
@@ -119,6 +102,86 @@ static void on_sigint(int) {
     for (pid_t p : g_children) {
         if (p > 0) kill(p, SIGTERM);
     }
+}
+
+// Update shared stats with mutex semaphore
+static void stats_inc(SysVSharedMemory& shm, SysVSemaphore& mtx, void (*mut)(SharedStats*)) {
+    if (mtx.down() < 0) return;
+    auto* s = (SharedStats*)shm.attach();
+    if (s) {
+        mut(s);
+        shm.detach();
+    }
+    mtx.up();
+}
+
+// --- bridge server: processes requests sequentially ---
+static int run_bridge_server(const Config& cfg) {
+    (void)cfg;
+
+    SysVMessageQueue mq;
+    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
+
+    SysVSharedMemory shm;
+    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
+
+    SysVSemaphore mtx;
+    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
+
+    while (true) {
+        BridgeReqMsg req;
+        if (mq.recv_req(&req) < 0) return 1;
+
+        atomic_log_line("bridge:begin", req.tourist_id);
+        usleep(150 * 1000);
+
+        stats_inc(shm, mtx, [](SharedStats* s){ s->bridge_crossings++; });
+
+        usleep(150 * 1000);
+        atomic_log_line("bridge:end", req.tourist_id);
+
+        if (mq.send_done(req.tourist_id, req.tourist_pid) < 0) return 1;
+    }
+    return 0;
+}
+
+static int run_tourist_process(int id, const Config& cfg) {
+    (void)cfg;
+
+    SysVSemaphore cap;
+    if (cap.create_or_open(SEM_CAP_TOKEN, SEM_CAP_PROJ, 1, 0600) < 0) return 1;
+
+    SysVSharedMemory shm;
+    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
+
+    SysVSemaphore mtx;
+    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
+
+    SysVMessageQueue mq;
+    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
+
+    if (cap.down() < 0) return 1;
+    atomic_log_line("tourist-enter", id);
+    stats_inc(shm, mtx, [](SharedStats* s){ s->tourists_entered++; });
+
+    if (mq.send_req(id, (int)getpid()) < 0) return 1;
+    if (mq.recv_done(id, (int)getpid()) < 0) return 1;
+
+    usleep(200 * 1000);
+
+    stats_inc(shm, mtx, [](SharedStats* s){ s->tourists_exited++; });
+    atomic_log_line("tourist-exit", id);
+
+    if (cap.up() < 0) return 1;
+
+    return 0;
+}
+
+static int run_guide_process(int id, const Config& cfg) {
+    (void)cfg;
+    atomic_log_line("guide", id);
+    usleep(400 * 1000);
+    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -149,30 +212,36 @@ int main(int argc, char **argv) {
         return run_guide_process(std::atoi(id_s), cfg);
     }
 
-    std::cout << "[MAIN] starting simulation (process mode + SysV semaphore gate)\n";
+    if (role && std::strcmp(role, "bridge") == 0) {
+        return run_bridge_server(cfg);
+    }
+
+    std::cout << "[MAIN] start (semaphore gate + shared stats + message-queue bridge)\n";
 
     struct sigaction sa;
     std::memset(&sa, 0, sizeof(sa));
     sa.sa_handler = on_sigint;
     sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGINT, &sa, nullptr) < 0) {
-        perror("sigaction(SIGINT)");
-    }
+    if (sigaction(SIGINT, &sa, nullptr) < 0) perror("sigaction(SIGINT)");
 
-    SysVSemaphore sem;
-    if (sem.create_or_open(SEM_TOKEN_PATH, SEM_PROJ_ID, capacity, 0600) < 0) {
-        return 1;
-    }
+    SysVSemaphore cap;
+    if (cap.create_or_open(SEM_CAP_TOKEN, SEM_CAP_PROJ, capacity, 0600) < 0) return 1;
+
+    SysVSemaphore mtx;
+    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
+
+    SysVSharedMemory shm;
+    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
+
+    SysVMessageQueue mq;
+    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
 
     std::vector<pid_t> children;
-    children.reserve((size_t)cfg.tourists_total + (size_t)guides_total);
+    children.reserve((size_t)cfg.tourists_total + (size_t)guides_total + 1);
 
     auto spawn_role = [&](const char* r, int id) {
         pid_t pid = fork();
-        if (pid < 0) {
-            perror("fork");
-            return;
-        }
+        if (pid < 0) { perror("fork"); return; }
         if (pid == 0) {
             auto args = build_exec_args(argv[0], r, id, argc, argv);
             auto cargv = to_exec_argv(args);
@@ -184,21 +253,46 @@ int main(int argc, char **argv) {
         g_children.push_back(pid);
     };
 
+    spawn_role("bridge", 0);
     for (int i = 0; i < guides_total; ++i) spawn_role("guide", i);
     for (int i = 0; i < cfg.tourists_total; ++i) spawn_role("tourist", i);
 
-    for (pid_t c : children) {
+    // Wait for non-bridge processes (bridge is children[0])
+    for (size_t i = 1; i < children.size(); ++i) {
         int status = 0;
-        if (waitpid(c, &status, 0) < 0) {
-            perror("waitpid");
+        if (waitpid(children[i], &status, 0) < 0) perror("waitpid");
+    }
+
+    // Stop bridge
+    if (!children.empty()) {
+        kill(children[0], SIGTERM);
+        int st = 0;
+        waitpid(children[0], &st, 0);
+    }
+
+    // Print final stats
+    if (mtx.down() == 0) {
+        auto* s = (SharedStats*)shm.attach();
+        if (s) {
+            std::cout << "[STATS] entered=" << s->tourists_entered
+                      << " exited=" << s->tourists_exited
+                      << " bridge_crossings=" << s->bridge_crossings
+                      << "\n";
+            shm.detach();
         }
+        mtx.up();
     }
 
-    sem.remove();
-    if (unlink(SEM_TOKEN_PATH) < 0) {
-        perror("unlink(sem token)");
-    }
+    mq.remove();
+    shm.remove();
+    cap.remove();
+    mtx.remove();
 
-    std::cout << "[MAIN] all child processes finished\n";
+    unlink(SEM_CAP_TOKEN);
+    unlink(SEM_MTX_TOKEN);
+    unlink(SHM_TOKEN);
+    unlink(MSG_TOKEN);
+
+    std::cout << "[MAIN] done\n";
     return 0;
 }
