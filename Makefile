@@ -8,7 +8,10 @@ all:
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SRCS) -o $(OUT)
 
 run:
-	./$(OUT) --tourists=5 --guides=1 --capacity=2
+	./$(OUT) --tourists=8 --guides=1 --capacity=2
+
+evac:
+	./$(OUT) --tourists=30 --guides=1 --capacity=3 & echo $$! > /tmp/sim.pid; sleep 1; kill -USR1 $$(cat /tmp/sim.pid)
 
 clean:
 	rm -f $(OUT)
