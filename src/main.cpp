@@ -1,4 +1,5 @@
-// main.cpp - IPC3: SIGUSR1 evacuation + FIFO log server + sem+shm+msg bridge
+// main.cpp – IPC3 FIXED
+// SIGUSR1 evacuation + FIFO logger + SysV sem/shm/msg
 #include <iostream>
 #include <vector>
 #include <string>
@@ -19,38 +20,37 @@
 #include "ipc_shm.hpp"
 #include "ipc_msg.hpp"
 
-// --- helper to read --key=value ---
+/* ===================== helpers ===================== */
+
 static const char* get_arg(int argc, char** argv, const char* key) {
     size_t klen = std::strlen(key);
-    for (int i = 1; i < argc; ++i) {
-        if (std::strncmp(argv[i], key, klen) == 0 && argv[i][klen] == '=') return argv[i] + klen + 1;
-    }
+    for (int i = 1; i < argc; ++i)
+        if (std::strncmp(argv[i], key, klen) == 0 && argv[i][klen] == '=')
+            return argv[i] + klen + 1;
     return nullptr;
 }
 
-static bool has_prefix(const char* s, const char* prefix) {
-    return std::strncmp(s, prefix, std::strlen(prefix)) == 0;
+static bool has_prefix(const char* s, const char* p) {
+    return std::strncmp(s, p, std::strlen(p)) == 0;
 }
 
-static int parse_nonneg_int_arg(int argc, char** argv, const char* key, int default_val) {
+static int parse_nonneg(int argc, char** argv, const char* key, int def) {
     const char* v = get_arg(argc, argv, key);
-    if (!v) return default_val;
+    if (!v) return def;
     errno = 0;
-    char* end = nullptr;
-    long x = std::strtol(v, &end, 10);
-    if (errno != 0 || end == v || *end != '\0' || x < 0 || x > 1000000) {
-        std::cerr << "Invalid value for " << key << ": " << v << "\n";
-        return default_val;
-    }
+    char* e = nullptr;
+    long x = std::strtol(v, &e, 10);
+    if (errno || e == v || *e || x < 0) return def;
     return (int)x;
 }
 
-static std::vector<std::string> build_exec_args(const char* self, const char* role, int id, int argc, char** argv) {
+static std::vector<std::string> build_exec_args(
+    const char* self, const char* role, int id, int argc, char** argv
+) {
     std::vector<std::string> out;
-    out.reserve((size_t)argc + 8);
     out.emplace_back(self);
     out.emplace_back(std::string("--role=") + role);
-    if (id >= 0) out.emplace_back(std::string("--id=") + std::to_string(id));
+    if (id >= 0) out.emplace_back("--id=" + std::to_string(id));
     for (int i = 1; i < argc; ++i) {
         if (has_prefix(argv[i], "--role=")) continue;
         if (has_prefix(argv[i], "--id=")) continue;
@@ -59,327 +59,227 @@ static std::vector<std::string> build_exec_args(const char* self, const char* ro
     return out;
 }
 
-static std::vector<char*> to_exec_argv(std::vector<std::string>& args) {
-    std::vector<char*> out;
-    out.reserve(args.size() + 1);
-    for (auto& s : args) out.push_back(const_cast<char*>(s.c_str()));
-    out.push_back(nullptr);
-    return out;
+static std::vector<char*> to_exec_argv(std::vector<std::string>& v) {
+    std::vector<char*> r;
+    for (auto& s : v) r.push_back(const_cast<char*>(s.c_str()));
+    r.push_back(nullptr);
+    return r;
 }
 
-// ===== FIFO logging =====
+/* ===================== FIFO logger ===================== */
+
 static const char* FIFO_PATH = "/tmp/park_sim.fifo";
 static const char* LOG_PATH  = "/tmp/park_simulation.log";
+static volatile sig_atomic_t g_stop = 0;
 
-// Open FIFO for writing (non-blocking). If server isn't ready, fall back to stderr.
-static void fifo_log_line(const char* tag, int id) {
-    char line[256];
-    int n = std::snprintf(line, sizeof(line), "[%s] pid=%d id=%d\n", tag, (int)getpid(), id);
+static void fifo_log(const char* tag, int id) {
+    char buf[200];
+    int n = std::snprintf(buf, sizeof(buf),
+        "[%s] pid=%d id=%d\n", tag, (int)getpid(), id);
     if (n <= 0) return;
 
     int fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK);
     if (fd < 0) {
-        // fallback: stderr
-        (void)!write(STDERR_FILENO, line, (size_t)n);
+        write(2, buf, (size_t)n);
         return;
     }
-    (void)!write(fd, line, (size_t)n);
+    write(fd, buf, (size_t)n);
     close(fd);
 }
 
-// Log server reads FIFO and appends to a log file using syscalls open/read/write/close.
+static void sigterm_handler(int) { g_stop = 1; }
+
 static int run_log_server() {
-    // Create FIFO if missing
-    if (mkfifo(FIFO_PATH, 0600) < 0) {
-        if (errno != EEXIST) { perror("mkfifo"); return 1; }
+    signal(SIGTERM, sigterm_handler);
+
+    if (mkfifo(FIFO_PATH, 0600) < 0 && errno != EEXIST) {
+        perror("mkfifo");
+        return 1;
     }
 
-    int fifo_fd = open(FIFO_PATH, O_RDONLY);
-    if (fifo_fd < 0) { perror("open(fifo read)"); return 1; }
+    int fifo = open(FIFO_PATH, O_RDONLY);
+    if (fifo < 0) { perror("open fifo"); return 1; }
 
-    // Open log file
-    int log_fd = open(LOG_PATH, O_CREAT | O_WRONLY | O_APPEND, 0600);
-    if (log_fd < 0) { perror("open(log)"); close(fifo_fd); return 1; }
+    int logf = open(LOG_PATH, O_CREAT | O_WRONLY | O_APPEND, 0600);
+    if (logf < 0) { perror("open log"); return 1; }
 
     char buf[512];
-    while (true) {
-        ssize_t r = read(fifo_fd, buf, sizeof(buf));
-        if (r < 0) {
-            if (errno == EINTR) continue;
-            perror("read(fifo)");
-            break;
-        }
-        if (r == 0) {
-            // All writers closed; keep FIFO open by reopening to continue service
-            close(fifo_fd);
-            fifo_fd = open(FIFO_PATH, O_RDONLY);
-            if (fifo_fd < 0) { perror("open(fifo read)"); break; }
-            continue;
-        }
-        if (write(log_fd, buf, (size_t)r) < 0) {
-            perror("write(log)");
-            break;
-        }
+    while (!g_stop) {
+        ssize_t r = read(fifo, buf, sizeof(buf));
+        if (r > 0) write(logf, buf, (size_t)r);
+        else if (r < 0 && errno != EINTR) break;
     }
 
-    close(log_fd);
-    close(fifo_fd);
+    close(logf);
+    close(fifo);
     return 0;
 }
 
-// ===== IPC tokens =====
-static const char* SEM_CAP_TOKEN  = "/tmp/park_sim.semcap";
-static const int   SEM_CAP_PROJ   = 0x11;
+/* ===================== IPC tokens ===================== */
 
-static const char* SEM_MTX_TOKEN  = "/tmp/park_sim.semmtx";
-static const int   SEM_MTX_PROJ   = 0x12;
+static const char* SEM_CAP_TOKEN = "/tmp/park_sim.semcap";
+static const char* SEM_MTX_TOKEN = "/tmp/park_sim.semmtx";
+static const char* SHM_TOKEN     = "/tmp/park_sim.shmkey";
+static const char* MSG_TOKEN     = "/tmp/park_sim.msgkey";
 
-static const char* SHM_TOKEN      = "/tmp/park_sim.shmkey";
-static const int   SHM_PROJ       = 0x21;
+/* ===================== bridge ===================== */
 
-static const char* MSG_TOKEN      = "/tmp/park_sim.msgkey";
-static const int   MSG_PROJ       = 0x31;
+static int run_bridge() {
+    signal(SIGTERM, sigterm_handler);
 
-static std::vector<pid_t> g_children;
-static volatile sig_atomic_t g_evacuate = 0;
-
-static void on_sigint(int) { g_evacuate = 1; }
-static void on_sigusr1(int) { g_evacuate = 1; }
-
-static void kill_children(int sig) {
-    for (pid_t p : g_children) if (p > 0) kill(p, sig);
-}
-
-static void stats_inc(SysVSharedMemory& shm, SysVSemaphore& mtx, void (*mut)(SharedStats*)) {
-    if (mtx.down() < 0) return;
-    auto* s = (SharedStats*)shm.attach();
-    if (s) {
-        mut(s);
-        shm.detach();
-    }
-    mtx.up();
-}
-
-// --- bridge server ---
-static int run_bridge_server(const Config&) {
     SysVMessageQueue mq;
-    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
-
     SysVSharedMemory shm;
-    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
-
     SysVSemaphore mtx;
-    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
 
-    while (true) {
+    mq.create_or_open(MSG_TOKEN, 0x31, 0600);
+    shm.create_or_open(SHM_TOKEN, 0x21, sizeof(SharedStats), 0600);
+    mtx.create_or_open(SEM_MTX_TOKEN, 0x12, 1, 0600);
+
+    while (!g_stop) {
         BridgeReqMsg req;
-        if (mq.recv_req(&req) < 0) return 1;
+        if (mq.recv_req(&req) < 0) {
+            if (errno == EINTR) continue;
+            break;
+        }
+        fifo_log("bridge:begin", req.tourist_id);
+        usleep(100000);
 
-        fifo_log_line("bridge:begin", req.tourist_id);
-        usleep(150 * 1000);
+        mtx.down();
+        auto* s = (SharedStats*)shm.attach();
+        if (s) { s->bridge_crossings++; shm.detach(); }
+        mtx.up();
 
-        stats_inc(shm, mtx, [](SharedStats* s){ s->bridge_crossings++; });
-
-        usleep(150 * 1000);
-        fifo_log_line("bridge:end", req.tourist_id);
-
-        if (mq.send_done(req.tourist_id, req.tourist_pid) < 0) return 1;
+        fifo_log("bridge:end", req.tourist_id);
+        mq.send_done(req.tourist_id, req.tourist_pid);
     }
     return 0;
 }
 
-// --- tourist ---
-static int run_tourist_process(int id, const Config&) {
-    // Capacity gate
-    SysVSemaphore cap;
-    if (cap.create_or_open(SEM_CAP_TOKEN, SEM_CAP_PROJ, 1, 0600) < 0) return 1;
+/* ===================== tourist / guide ===================== */
 
-    // Stats shm + mutex
+static int run_tourist(int id) {
+    SysVSemaphore cap, mtx;
     SysVSharedMemory shm;
-    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
-
-    SysVSemaphore mtx;
-    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
-
-    // Bridge queue
     SysVMessageQueue mq;
-    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
+
+    cap.create_or_open(SEM_CAP_TOKEN, 0x11, 1, 0600);
+    mtx.create_or_open(SEM_MTX_TOKEN, 0x12, 1, 0600);
+    shm.create_or_open(SHM_TOKEN, 0x21, sizeof(SharedStats), 0600);
+    mq.create_or_open(MSG_TOKEN, 0x31, 0600);
 
     if (cap.down() < 0) return 1;
-    fifo_log_line("tourist-enter", id);
-    stats_inc(shm, mtx, [](SharedStats* s){ s->tourists_entered++; });
+    fifo_log("tourist-enter", id);
 
-    if (mq.send_req(id, (int)getpid()) < 0) return 1;
-    if (mq.recv_done(id, (int)getpid()) < 0) return 1;
+    mtx.down();
+    auto* s = (SharedStats*)shm.attach();
+    if (s) { s->tourists_entered++; shm.detach(); }
+    mtx.up();
 
-    usleep(200 * 1000);
+    mq.send_req(id, getpid());
+    mq.recv_done(id, getpid());
 
-    stats_inc(shm, mtx, [](SharedStats* s){ s->tourists_exited++; });
-    fifo_log_line("tourist-exit", id);
+    usleep(150000);
 
-    if (cap.up() < 0) return 1;
+    mtx.down();
+    s = (SharedStats*)shm.attach();
+    if (s) { s->tourists_exited++; shm.detach(); }
+    mtx.up();
+
+    fifo_log("tourist-exit", id);
+    cap.up();
     return 0;
 }
 
-// --- guide ---
-static int run_guide_process(int id, const Config&) {
-    fifo_log_line("guide", id);
-    usleep(400 * 1000);
+static int run_guide(int id) {
+    fifo_log("guide", id);
+    usleep(200000);
     return 0;
 }
+
+/* ===================== MAIN ===================== */
+
+static volatile sig_atomic_t g_evacuate = 0;
+static void on_evacuate(int) { g_evacuate = 1; }
 
 int main(int argc, char** argv) {
     const char* role = get_arg(argc, argv, "--role");
     const char* id_s = get_arg(argc, argv, "--id");
 
-    int guides_total = parse_nonneg_int_arg(argc, argv, "--guides", 0);
-
-    Config cfg = Config::from_args(argc, argv);
-    int capacity = parse_nonneg_int_arg(argc, argv, "--capacity", cfg.tourists_total);
-    if (capacity <= 0) capacity = 1;
-
-    // Child roles
-    if (role && std::strcmp(role, "log") == 0) return run_log_server();
-    if (role && std::strcmp(role, "bridge") == 0) return run_bridge_server(cfg);
-
-    if (role && std::strcmp(role, "tourist") == 0) {
-        if (!id_s) { const char msg[] = "tourist role requires --id\n"; (void)!write(2, msg, sizeof(msg)-1); return 2; }
-        return run_tourist_process(std::atoi(id_s), cfg);
-    }
-    if (role && std::strcmp(role, "guide") == 0) {
-        if (!id_s) { const char msg[] = "guide role requires --id\n"; (void)!write(2, msg, sizeof(msg)-1); return 2; }
-        return run_guide_process(std::atoi(id_s), cfg);
+    if (role) {
+        if (!std::strcmp(role, "log"))    return run_log_server();
+        if (!std::strcmp(role, "bridge")) return run_bridge();
+        if (!std::strcmp(role, "tourist")) return run_tourist(std::atoi(id_s));
+        if (!std::strcmp(role, "guide"))   return run_guide(std::atoi(id_s));
     }
 
-    // MAIN
-    std::cout << "[MAIN] start (SIGUSR1 evacuation + FIFO logger + sem+shm+msg bridge)\n";
+    int tourists = parse_nonneg(argc, argv, "--tourists", 1);
+    int guides   = parse_nonneg(argc, argv, "--guides", 0);
+    int capacity = parse_nonneg(argc, argv, "--capacity", tourists);
 
-    // Install signal handlers (SIGINT, SIGUSR1)
-    struct sigaction sa{};
-    sa.sa_handler = on_sigint;
-    sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGINT, &sa, nullptr) < 0) perror("sigaction(SIGINT)");
+    signal(SIGUSR1, on_evacuate);
+    signal(SIGINT,  on_evacuate);
 
-    struct sigaction sb{};
-    sb.sa_handler = on_sigusr1;
-    sigemptyset(&sb.sa_mask);
-    if (sigaction(SIGUSR1, &sb, nullptr) < 0) perror("sigaction(SIGUSR1)");
-
-    // Create IPC objects (owner responsibilities)
-    SysVSemaphore cap;
-    if (cap.create_or_open(SEM_CAP_TOKEN, SEM_CAP_PROJ, capacity, 0600) < 0) return 1;
-
-    SysVSemaphore mtx;
-    if (mtx.create_or_open(SEM_MTX_TOKEN, SEM_MTX_PROJ, 1, 0600) < 0) return 1;
-
+    SysVSemaphore cap, mtx;
     SysVSharedMemory shm;
-    if (shm.create_or_open(SHM_TOKEN, SHM_PROJ, sizeof(SharedStats), 0600) < 0) return 1;
-
     SysVMessageQueue mq;
-    if (mq.create_or_open(MSG_TOKEN, MSG_PROJ, 0600) < 0) return 1;
 
-    // Spawn helper processes: log server first (so writers can open FIFO), then bridge
+    cap.create_or_open(SEM_CAP_TOKEN, 0x11, capacity, 0600);
+    mtx.create_or_open(SEM_MTX_TOKEN, 0x12, 1, 0600);
+    shm.create_or_open(SHM_TOKEN, 0x21, sizeof(SharedStats), 0600);
+    mq.create_or_open(MSG_TOKEN, 0x31, 0600);
+
     std::vector<pid_t> children;
 
-    auto spawn_role = [&](const char* r, int id) {
-        pid_t pid = fork();
-        if (pid < 0) { perror("fork"); return (pid_t)-1; }
-        if (pid == 0) {
-            auto args = build_exec_args(argv[0], r, id, argc, argv);
-            auto cargv = to_exec_argv(args);
-            execv(cargv[0], cargv.data());
-            perror("execv");
+    auto spawn = [&](const char* r, int id) {
+        pid_t p = fork();
+        if (p == 0) {
+            auto a = build_exec_args(argv[0], r, id, argc, argv);
+            auto c = to_exec_argv(a);
+            execv(c[0], c.data());
             _exit(127);
         }
-        children.push_back(pid);
-        g_children.push_back(pid);
-        return pid;
+        children.push_back(p);
     };
 
-    pid_t log_pid = spawn_role("log", 0);
-    (void)log_pid;
+    spawn("log", 0);
+    spawn("bridge", 0);
+    for (int i = 0; i < guides; ++i) spawn("guide", i);
+    for (int i = 0; i < tourists; ++i) spawn("tourist", i);
 
-    pid_t bridge_pid = spawn_role("bridge", 0);
-
-    for (int i = 0; i < guides_total; ++i) spawn_role("guide", i);
-    for (int i = 0; i < cfg.tourists_total; ++i) spawn_role("tourist", i);
-
-    // Main loop: wait for tourists+guides; if SIGUSR1 arrives => evacuation
-    // children order: log, bridge, guides..., tourists...
-    // Wait for guides+tourists while monitoring evacuation flag via EINTR.
-    for (size_t i = 2; i < children.size(); ++i) {
-        int status = 0;
-        while (true) {
-            pid_t w = waitpid(children[i], &status, 0);
-            if (w < 0) {
-                if (errno == EINTR) {
-                    if (g_evacuate) break;
-                    continue;
-                }
-                perror("waitpid");
-                break;
-            }
-            break;
+    for (pid_t p : children) {
+        int st;
+        while (waitpid(p, &st, 0) < 0 && errno == EINTR) {
+            if (g_evacuate) break;
         }
-        if (g_evacuate) break;
     }
 
     if (g_evacuate) {
-        // Mark evacuation in shared stats
-        if (mtx.down() == 0) {
-            auto* s = (SharedStats*)shm.attach();
-            if (s) {
-                s->evacuations++;
-                s->evacuation_on = 1;
-                shm.detach();
-            }
-            mtx.up();
-        }
-
-        std::cout << "[MAIN] evacuation triggered (SIGUSR1/SIGINT) -> terminating children\n";
-        kill_children(SIGTERM);
+        std::cout << "[MAIN] evacuation triggered\n";
+        for (pid_t p : children) kill(p, SIGTERM);
+        for (pid_t p : children) waitpid(p, nullptr, 0);
     }
 
-    // Ensure bridge/log are stopped
-    if (bridge_pid > 0) kill(bridge_pid, SIGTERM);
-    if (children.size() >= 1) kill(children[0], SIGTERM); // log
-
-    // Reap all children
-    for (pid_t p : children) {
-        int st = 0;
-        while (waitpid(p, &st, 0) < 0) {
-            if (errno == EINTR) continue;
-            break;
-        }
+    mtx.down();
+    auto* s = (SharedStats*)shm.attach();
+    if (s) {
+        std::cout << "[STATS] entered=" << s->tourists_entered
+                  << " exited=" << s->tourists_exited
+                  << " bridge=" << s->bridge_crossings << "\n";
+        shm.detach();
     }
+    mtx.up();
 
-    // Print final stats
-    if (mtx.down() == 0) {
-        auto* s = (SharedStats*)shm.attach();
-        if (s) {
-            std::cout << "[STATS] entered=" << s->tourists_entered
-                      << " exited=" << s->tourists_exited
-                      << " bridge_crossings=" << s->bridge_crossings
-                      << " evacuations=" << s->evacuations
-                      << "\n";
-            shm.detach();
-        }
-        mtx.up();
-    }
-
-    // Cleanup IPC
     mq.remove();
     shm.remove();
     cap.remove();
     mtx.remove();
 
-    // Remove token files + FIFO
+    unlink(FIFO_PATH);
     unlink(SEM_CAP_TOKEN);
     unlink(SEM_MTX_TOKEN);
     unlink(SHM_TOKEN);
     unlink(MSG_TOKEN);
-    unlink(FIFO_PATH);
 
-    std::cout << "[MAIN] done. Log file: " << LOG_PATH << "\n";
+    std::cout << "[MAIN] done. log=" << LOG_PATH << "\n";
     return 0;
 }
