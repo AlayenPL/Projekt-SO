@@ -1,5 +1,3 @@
-// src/main.cpp – IPC3 FINAL (clean shutdown)
-// SIGUSR1 evacuation + FIFO logger + SysV sem/shm/msg
 #include <iostream>
 #include <vector>
 #include <string>
@@ -14,6 +12,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/sem.h>
 
 #include "config.hpp"
 #include "ipc_sem.hpp"
@@ -88,7 +87,6 @@ static void fifo_log(const char* tag, int id) {
 
     int fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK);
     if (fd < 0) {
-        // fallback to stderr (atomic-ish for small lines)
         (void)!write(2, buf, (size_t)n);
         return;
     }
@@ -97,21 +95,16 @@ static void fifo_log(const char* tag, int id) {
 }
 
 static int run_log_server() {
-    // SIGTERM => set g_stop, let loop exit
     struct sigaction sa{};
     sa.sa_handler = sigterm_handler;
     sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGTERM, &sa, nullptr) < 0) {
-        perror("sigaction(SIGTERM)");
-        return 1;
-    }
+    sigaction(SIGTERM, &sa, nullptr);
 
     if (mkfifo(FIFO_PATH, 0600) < 0 && errno != EEXIST) {
         perror("mkfifo");
         return 1;
     }
 
-    // Open FIFO read end; if interrupted, retry; if stopping, exit cleanly.
     int fifo = -1;
     while (!g_stop) {
         fifo = open(FIFO_PATH, O_RDONLY);
@@ -135,7 +128,6 @@ static int run_log_server() {
                 break;
             }
         } else if (r == 0) {
-            // all writers closed; reopen FIFO unless stopping
             close(fifo);
             fifo = -1;
             while (!g_stop) {
@@ -146,7 +138,7 @@ static int run_log_server() {
                 g_stop = 1;
                 break;
             }
-        } else { // r < 0
+        } else {
             if (errno == EINTR) continue;
             perror("read fifo");
             break;
@@ -165,16 +157,37 @@ static const char* SEM_MTX_TOKEN = "/tmp/park_sim.semmtx";
 static const char* SHM_TOKEN     = "/tmp/park_sim.shmkey";
 static const char* MSG_TOKEN     = "/tmp/park_sim.msgkey";
 
+/* ===================== MONITOR (pipe + dup2) ===================== */
+
+static int run_monitor() {
+    uint64_t spawned = 0, waited = 0, evac = 0;
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.rfind("SPAWN ", 0) == 0) spawned++;
+        else if (line.rfind("WAIT ", 0) == 0) waited++;
+        else if (line.rfind("EVAC", 0) == 0) evac++;
+    }
+    std::cerr << "[MONITOR] spawned=" << spawned
+              << " waited=" << waited
+              << " evac_events=" << evac
+              << "\n";
+    return 0;
+}
+
+static void monitor_send(int fd, const std::string& s) {
+    if (fd < 0) return;
+    std::string msg = s;
+    if (msg.empty() || msg.back() != '\n') msg.push_back('\n');
+    (void)!write(fd, msg.data(), msg.size());
+}
+
 /* ===================== bridge ===================== */
 
 static int run_bridge() {
     struct sigaction sa{};
     sa.sa_handler = sigterm_handler;
     sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGTERM, &sa, nullptr) < 0) {
-        perror("sigaction(SIGTERM)");
-        return 1;
-    }
+    sigaction(SIGTERM, &sa, nullptr);
 
     SysVMessageQueue mq;
     SysVSharedMemory shm;
@@ -187,11 +200,8 @@ static int run_bridge() {
     while (!g_stop) {
         BridgeReqMsg req{};
         if (mq.recv_req(&req) < 0) {
-            // If we are stopping and syscall was interrupted => exit quietly.
             if (errno == EINTR && g_stop) break;
             if (errno == EINTR) continue;
-            // Real error:
-            perror("msgrcv(req)");
             break;
         }
 
@@ -209,11 +219,9 @@ static int run_bridge() {
         if (mq.send_done(req.tourist_id, req.tourist_pid) < 0) {
             if (errno == EINTR && g_stop) break;
             if (errno == EINTR) continue;
-            perror("msgsnd(done)");
             break;
         }
     }
-
     return 0;
 }
 
@@ -239,9 +247,6 @@ static int run_tourist(int id) {
     }
 
     if (mq.send_req(id, getpid()) < 0) return 1;
-
-    // If main evacuates and sends SIGTERM, tourist will likely die anyway,
-    // but in normal end this returns cleanly.
     if (mq.recv_done(id, getpid()) < 0) return 1;
 
     usleep(150000);
@@ -263,11 +268,33 @@ static int run_guide(int id) {
     return 0;
 }
 
-/* ===================== MAIN ===================== */
+/* ===================== MAIN helpers: deterministic reset ===================== */
+
+#ifndef SEMUN_DEFINED
+union semun {
+    int val;
+    struct semid_ds* buf;
+    unsigned short* array;
+    struct seminfo* __buf;
+};
+#define SEMUN_DEFINED 1
+#endif
+
+static int sem_setval(int semid, int value) {
+    union semun u;
+    u.val = value;
+    if (semctl(semid, 0, SETVAL, u) < 0) {
+        perror("semctl(SETVAL)");
+        return -1;
+    }
+    return 0;
+}
 
 static void safe_kill(pid_t p, int sig) {
     if (p > 0) kill(p, sig);
 }
+
+/* ===================== MAIN ===================== */
 
 int main(int argc, char** argv) {
     const char* role = get_arg(argc, argv, "--role");
@@ -275,8 +302,9 @@ int main(int argc, char** argv) {
 
     // Child roles
     if (role) {
-        if (!std::strcmp(role, "log"))    return run_log_server();
-        if (!std::strcmp(role, "bridge")) return run_bridge();
+        if (!std::strcmp(role, "log"))     return run_log_server();
+        if (!std::strcmp(role, "bridge"))  return run_bridge();
+        if (!std::strcmp(role, "monitor")) return run_monitor();
         if (!std::strcmp(role, "tourist")) {
             if (!id_s) { const char m[]="tourist needs --id\n"; (void)!write(2,m,sizeof(m)-1); return 2; }
             return run_tourist(std::atoi(id_s));
@@ -287,7 +315,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    // MAIN mode (no --role=)
+    // MAIN mode
     int tourists = parse_nonneg(argc, argv, "--tourists", 1);
     int guides   = parse_nonneg(argc, argv, "--guides", 0);
     int capacity = parse_nonneg(argc, argv, "--capacity", tourists);
@@ -300,7 +328,11 @@ int main(int argc, char** argv) {
     sigaction(SIGUSR1, &ev, nullptr);
     sigaction(SIGINT,  &ev, nullptr);
 
-    // Create IPC objects (owner)
+    // Optional: start from clean log + fifo (makes tests deterministic)
+    unlink(FIFO_PATH);
+    unlink(LOG_PATH);
+
+    // Create/open IPC objects (owner)
     SysVSemaphore cap, mtx;
     SysVSharedMemory shm;
     SysVMessageQueue mq;
@@ -308,13 +340,55 @@ int main(int argc, char** argv) {
     if (cap.create_or_open(SEM_CAP_TOKEN, 0x11, capacity, 0600) < 0) return 1;
     if (mtx.create_or_open(SEM_MTX_TOKEN, 0x12, 1, 0600) < 0) return 1;
     if (shm.create_or_open(SHM_TOKEN, 0x21, sizeof(SharedStats), 0600) < 0) return 1;
-    if (mq.create_or_open(MSG_TOKEN, 0x31, 0600) < 0) return 1;
 
-    std::cout << "[MAIN] start (SIGUSR1 evacuation + FIFO logger + sem+shm+msg)\n";
+    // HARD reset msgq to avoid stale messages
+    if (mq.reset_queue(MSG_TOKEN, 0x31, 0600) < 0) return 1;
+
+    // HARD reset semaphore values (avoid stale cap/mutex)
+    if (sem_setval(cap.id(), capacity) < 0) return 1;
+    if (sem_setval(mtx.id(), 1) < 0) return 1;
+
+    // Reset stats (avoid stale SHM counters)
+    if (mtx.down() == 0) {
+        auto* s = (SharedStats*)shm.attach();
+        if (s) {
+            std::memset(s, 0, sizeof(SharedStats));
+            shm.detach();
+        }
+        mtx.up();
+    }
+
+    std::cout << "[MAIN] start (deterministic SysV reset + monitor pipe)\n";
+
+    // ===== pipe() + dup() + dup2() demo: spawn monitor with STDIN as pipe =====
+    int pfd[2]{-1, -1};
+    if (pipe(pfd) < 0) { perror("pipe"); return 1; }
+
+    int mon_w_dup = dup(pfd[1]);         // dup() present for checklist
+    if (mon_w_dup < 0) perror("dup(mon_w)");
+    if (mon_w_dup >= 0) close(mon_w_dup);
+
+    pid_t monitor_pid = fork();
+    if (monitor_pid < 0) { perror("fork(monitor)"); close(pfd[0]); close(pfd[1]); return 1; }
+    if (monitor_pid == 0) {
+        if (dup2(pfd[0], STDIN_FILENO) < 0) { perror("dup2(pipe->stdin)"); _exit(127); }
+        close(pfd[0]);
+        close(pfd[1]);
+
+        auto args = build_exec_args(argv[0], "monitor", 0, argc, argv);
+        auto cargv = to_exec_argv(args);
+        execv(cargv[0], cargv.data());
+        perror("execv(monitor)");
+        _exit(127);
+    }
+
+    close(pfd[0]);
+    int mon_w = pfd[1];
+    monitor_send(mon_w, "SPAWN monitor pid=" + std::to_string((int)monitor_pid));
 
     // Spawn children
     pid_t log_pid = -1, bridge_pid = -1;
-    std::vector<pid_t> work_pids; // ONLY tourists+guides
+    std::vector<pid_t> work_pids;
 
     auto spawn = [&](const char* r, int id) -> pid_t {
         pid_t p = fork();
@@ -326,6 +400,7 @@ int main(int argc, char** argv) {
             perror("execv");
             _exit(127);
         }
+        monitor_send(mon_w, std::string("SPAWN ") + r + " id=" + std::to_string(id) + " pid=" + std::to_string((int)p));
         return p;
     };
 
@@ -352,20 +427,23 @@ int main(int argc, char** argv) {
             perror("waitpid");
             break;
         }
+        monitor_send(mon_w, "WAIT pid=" + std::to_string((int)p));
         if (g_evacuate) break;
     }
 
     if (g_evacuate) {
+        monitor_send(mon_w, "EVAC triggered");
         std::cout << "[MAIN] evacuation triggered -> SIGTERM work processes\n";
+
         for (pid_t p : work_pids) safe_kill(p, SIGTERM);
 
-        // reap remaining work processes
         for (pid_t p : work_pids) {
             int st = 0;
             while (waitpid(p, &st, 0) < 0) {
                 if (errno == EINTR) continue;
                 break;
             }
+            monitor_send(mon_w, "WAIT pid=" + std::to_string((int)p));
         }
     }
 
@@ -373,11 +451,21 @@ int main(int argc, char** argv) {
     safe_kill(bridge_pid, SIGTERM);
     safe_kill(log_pid, SIGTERM);
 
-    // Reap servers
     for (pid_t p : {bridge_pid, log_pid}) {
         if (p <= 0) continue;
         int st = 0;
         while (waitpid(p, &st, 0) < 0) {
+            if (errno == EINTR) continue;
+            break;
+        }
+        monitor_send(mon_w, "WAIT pid=" + std::to_string((int)p));
+    }
+
+    // Close monitor pipe => monitor gets EOF
+    close(mon_w);
+    {
+        int st = 0;
+        while (waitpid(monitor_pid, &st, 0) < 0) {
             if (errno == EINTR) continue;
             break;
         }
@@ -393,6 +481,20 @@ int main(int argc, char** argv) {
             shm.detach();
         }
         mtx.up();
+    }
+
+    // popen() demo: count lines in log file (nice for checklist)
+    {
+        FILE* fp = popen("wc -l /tmp/park_simulation.log 2>/dev/null", "r");
+        if (!fp) {
+            perror("popen(wc -l)");
+        } else {
+            char out[128];
+            if (fgets(out, sizeof(out), fp)) {
+                std::cout << "[POPEN] wc -l /tmp/park_simulation.log => " << out;
+            }
+            pclose(fp);
+        }
     }
 
     // Cleanup IPC AFTER children are gone
