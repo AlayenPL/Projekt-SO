@@ -8,6 +8,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+/**
+ * @brief Ensure token file exists for ftok.
+ */
 static int ensure_token_file(const char* path) {
     int fd = open(path, O_CREAT | O_WRONLY, 0600);
     if (fd < 0) { perror("open(token)"); return -1; }
@@ -17,6 +20,9 @@ static int ensure_token_file(const char* path) {
     return 0;
 }
 
+/**
+ * @brief Create or open a SysV message queue.
+ */
 int SysVMessageQueue::create_or_open(const char* token_path, int proj_id, int perms) {
     if (ensure_token_file(token_path) < 0) return -1;
     key_t key = ftok(token_path, proj_id);
@@ -28,6 +34,9 @@ int SysVMessageQueue::create_or_open(const char* token_path, int proj_id, int pe
     return 0;
 }
 
+/**
+ * @brief Remove the message queue.
+ */
 int SysVMessageQueue::remove() {
     if (msqid_ < 0) return 0;
     if (msgctl(msqid_, IPC_RMID, nullptr) < 0) {
@@ -38,6 +47,9 @@ int SysVMessageQueue::remove() {
     return 0;
 }
 
+/**
+ * @brief Drop all messages by recreating the queue.
+ */
 int SysVMessageQueue::reset_queue(const char* token_path, int proj_id, int perms) {
     // create/open current queue
     if (create_or_open(token_path, proj_id, perms) < 0) return -1;
@@ -51,6 +63,9 @@ int SysVMessageQueue::reset_queue(const char* token_path, int proj_id, int perms
     return 0;
 }
 
+/**
+ * @brief Send bridge crossing request message.
+ */
 int SysVMessageQueue::send_req(int tourist_id, int tourist_pid) {
     if (msqid_ < 0) { errno = EINVAL; perror("msgsnd(req): invalid msqid"); return -1; }
     BridgeReqMsg msg{1, (int32_t)BridgeMsgKind::REQ_CROSS, tourist_id, tourist_pid};
@@ -62,6 +77,9 @@ int SysVMessageQueue::send_req(int tourist_id, int tourist_pid) {
     return 0;
 }
 
+/**
+ * @brief Receive next bridge crossing request.
+ */
 int SysVMessageQueue::recv_req(BridgeReqMsg* out) {
     if (msqid_ < 0) { errno = EINVAL; perror("msgrcv(req): invalid msqid"); return -1; }
     BridgeReqMsg msg{};
@@ -76,6 +94,9 @@ int SysVMessageQueue::recv_req(BridgeReqMsg* out) {
     return 0;
 }
 
+/**
+ * @brief Send completion notification to tourist pid.
+ */
 int SysVMessageQueue::send_done(int tourist_id, int tourist_pid) {
     if (msqid_ < 0) { errno = EINVAL; perror("msgsnd(done): invalid msqid"); return -1; }
     BridgeResMsg msg{(long)tourist_pid, (int32_t)BridgeMsgKind::RES_DONE, tourist_id};
@@ -87,6 +108,9 @@ int SysVMessageQueue::send_done(int tourist_id, int tourist_pid) {
     return 0;
 }
 
+/**
+ * @brief Receive completion notification for this process.
+ */
 int SysVMessageQueue::recv_done(int tourist_id, int tourist_pid) {
     (void)tourist_id;
     if (msqid_ < 0) { errno = EINVAL; perror("msgrcv(done): invalid msqid"); return -1; }

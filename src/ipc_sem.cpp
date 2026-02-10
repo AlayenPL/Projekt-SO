@@ -18,6 +18,9 @@ union semun {
 #define SEMUN_DEFINED 1
 #endif
 
+/**
+ * @brief Ensure a token file exists for ftok and can be opened.
+ */
 static int ensure_token_file(const char* path) {
     int fd = open(path, O_CREAT | O_WRONLY, 0600);
     if (fd < 0) { perror("open(token)"); return -1; }
@@ -27,6 +30,9 @@ static int ensure_token_file(const char* path) {
     return 0;
 }
 
+/**
+ * @brief Create or open a SysV semaphore with given token and project id.
+ */
 int SysVSemaphore::create_or_open(const char* token_path, int proj_id, int initial_value, int perms) {
     if (ensure_token_file(token_path) < 0) return -1;
 
@@ -53,6 +59,9 @@ int SysVSemaphore::create_or_open(const char* token_path, int proj_id, int initi
     return 0;
 }
 
+/**
+ * @brief Decrement (P) the semaphore.
+ */
 int SysVSemaphore::down() {
     if (semid_ < 0) { errno = EINVAL; perror("semop(down): invalid semid"); return -1; }
     struct sembuf op{0, -1, (short)SEM_UNDO};
@@ -60,6 +69,9 @@ int SysVSemaphore::down() {
     return 0;
 }
 
+/**
+ * @brief Increment (V) the semaphore.
+ */
 int SysVSemaphore::up() {
     if (semid_ < 0) { errno = EINVAL; perror("semop(up): invalid semid"); return -1; }
     struct sembuf op{0, +1, (short)SEM_UNDO};
@@ -67,6 +79,9 @@ int SysVSemaphore::up() {
     return 0;
 }
 
+/**
+ * @brief Remove the semaphore.
+ */
 int SysVSemaphore::remove() {
     if (semid_ < 0) return 0;
     if (semctl(semid_, 0, IPC_RMID) < 0) { perror("semctl(IPC_RMID)"); return -1; }

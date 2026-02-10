@@ -47,21 +47,51 @@ public:
     std::atomic<bool> abort_to_k{false};
     std::atomic<bool> tower_evacuate{false};
 
+    /**
+     * @brief Construct tourist with id/age/VIP and owning park pointer.
+     */
     Tourist(int id_, int age_, bool vip_, Park* park_);
 
+    /**
+     * @brief Start the tourist thread.
+     */
     void start();
+    /**
+     * @brief Join the tourist thread.
+     */
     void join();
 
+    /**
+     * @brief Notify the tourist that cashier admitted them.
+     */
     void on_admitted();
+    /**
+     * @brief Notify the tourist that cashier rejected them.
+     */
     void on_rejected();
 
     // Group assignment (tu ustawiamy gid/pid – to jest miejsce, gdzie i tak to robisz)
+    /**
+     * @brief Assign group id and guide id once grouped.
+     */
     void assign_to_group(int gid, int pid);
 
+    /**
+     * @brief Set the next step for this tourist (used by group control).
+     */
     void set_step(Step s);
 
+    /**
+     * @brief Assign a guardian; marks missing guardian for children.
+     */
     void set_guardian(Tourist* g, bool is_u5_child);
+    /**
+     * @brief Guardian signals wards they are ready for the epoch.
+     */
     void guardian_notify_wards_ready(int epoch);
+    /**
+     * @brief Child waits until guardian ready or abort flag.
+     */
     void child_wait_for_guardian_ready(int epoch, const char* where_tag);
 
 private:
@@ -81,7 +111,16 @@ private:
     std::condition_variable escort_cv;
     int escort_epoch = 0;
 
+    /**
+     * @brief Thread body entry point.
+     */
     void run();
+    /**
+     * @brief VIP tour flow (unguided).
+     */
     void run_vip();
+    /**
+     * @brief Guided tour flow (wait for group and follow guide steps).
+     */
     void run_guided();
 };

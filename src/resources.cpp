@@ -4,8 +4,14 @@
 
 // ------------------------- BRIDGE (A) -------------------------
 
+/**
+ * @brief Initialize bridge monitor with capacity and logger.
+ */
 Bridge::Bridge(int cap_, Logger& log_) : cap(cap_), log(log_) {}
 
+/**
+ * @brief Enter bridge respecting direction and capacity constraints.
+ */
 void Bridge::enter(int tourist_id, Direction d) {
     std::unique_lock<std::mutex> lk(mu);
     cv.wait(lk, [&]{
@@ -33,6 +39,9 @@ void Bridge::enter(int tourist_id, Direction d) {
     cv.notify_all();
 }
 
+/**
+ * @brief Leave bridge; clears direction when last leaves.
+ */
 void Bridge::leave(int tourist_id) {
     std::unique_lock<std::mutex> lk(mu);
 
@@ -54,8 +63,14 @@ void Bridge::leave(int tourist_id) {
 
 // ------------------------- TOWER (B) -------------------------
 
+/**
+ * @brief Initialize tower monitor with capacity and logger.
+ */
 Tower::Tower(int cap_, Logger& log_) : cap(cap_), log(log_) {}
 
+/**
+ * @brief Enter tower as single visitor with VIP fairness logic.
+ */
 void Tower::enter(int tourist_id, bool vip) {
     std::unique_lock<std::mutex> lk(mu);
 
@@ -105,6 +120,9 @@ void Tower::enter(int tourist_id, bool vip) {
     cv.notify_all();
 }
 
+/**
+ * @brief Leave tower as single visitor.
+ */
 void Tower::leave(int tourist_id) {
     std::unique_lock<std::mutex> lk(mu);
 
@@ -122,6 +140,9 @@ void Tower::leave(int tourist_id) {
 }
 
 // ---- Tower: wejście grupowe ----
+/**
+ * @brief Enter tower as group occupying k slots with VIP-like priority toggle.
+ */
 void Tower::enter_group(int group_id, int k, bool vip_like) {
     if (k <= 0) return;
 
@@ -176,6 +197,9 @@ void Tower::enter_group(int group_id, int k, bool vip_like) {
     cv.notify_all();
 }
 
+/**
+ * @brief Leave tower as group releasing k slots.
+ */
 void Tower::leave_group(int group_id, int k) {
     if (k <= 0) return;
 
@@ -198,8 +222,14 @@ void Tower::leave_group(int group_id, int k) {
 
 // ------------------------- FERRY (C) -------------------------
 
+/**
+ * @brief Initialize ferry monitor with capacity and logger.
+ */
 Ferry::Ferry(int cap_, Logger& log_) : cap(cap_), log(log_) {}
 
+/**
+ * @brief Board ferry as single visitor with VIP fairness and direction log.
+ */
 void Ferry::board(int tourist_id, bool vip, Direction d) {
     std::unique_lock<std::mutex> lk(mu);
 
@@ -252,6 +282,9 @@ void Ferry::board(int tourist_id, bool vip, Direction d) {
     cv.notify_all();
 }
 
+/**
+ * @brief Unboard ferry as single visitor.
+ */
 void Ferry::unboard(int tourist_id) {
     std::unique_lock<std::mutex> lk(mu);
 
@@ -269,6 +302,9 @@ void Ferry::unboard(int tourist_id) {
 }
 
 // ---- Ferry: wejście grupowe ----
+/**
+ * @brief Board ferry as group occupying k slots with VIP-like fairness.
+ */
 void Ferry::board_group(int group_id, int k, bool vip_like, Direction d) {
     if (k <= 0) return;
 
@@ -325,6 +361,9 @@ void Ferry::board_group(int group_id, int k, bool vip_like, Direction d) {
     cv.notify_all();
 }
 
+/**
+ * @brief Unboard ferry as group releasing k slots.
+ */
 void Ferry::unboard_group(int group_id, int k) {
     if (k <= 0) return;
 

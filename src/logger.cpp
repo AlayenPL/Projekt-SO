@@ -7,6 +7,9 @@
 
 Logger* Logger::g_logger_ = nullptr;
 
+/**
+ * @brief Construct logger writing to given path; truncates existing file.
+ */
 Logger::Logger(const std::string& path)
 {
     namespace fs = std::filesystem;
@@ -33,6 +36,9 @@ Logger::Logger(const std::string& path)
     g_logger_ = this;
 }
 
+/**
+ * @brief Log a message with relative timestamp in milliseconds.
+ */
 void Logger::log_ts(const std::string& tag, const std::string& msg)
 {
     auto now = std::chrono::steady_clock::now();
@@ -43,6 +49,9 @@ void Logger::log_ts(const std::string& tag, const std::string& msg)
     out_.flush();
 }
 
+/**
+ * @brief Static helper to log through global logger if initialized.
+ */
 void Logger::log(const std::string& msg)
 {
     if (!g_logger_) return;

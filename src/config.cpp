@@ -3,6 +3,9 @@
 #include <cstring>
 #include <cstdlib>
 
+/**
+ * @brief Parse CLI arguments into Config instance.
+ */
 Config Config::from_args(int argc, char** argv) {
     Config cfg;
     for (int i = 1; i < argc; ++i) {

@@ -39,9 +39,15 @@ struct GroupControl {
     int ferry_coordinator_id = -1;
     std::condition_variable ferry_cv;
 
+    /**
+     * @brief Construct group control for given group and guide ids.
+     */
     GroupControl(int gid, int pid) : group_id(gid), guide_id(pid) {}
 
     // Preferuj dorosłego (>=15). Jeśli nie ma — bierz najniższe id.
+    /**
+     * @brief Choose coordinator tourist id (adult preferred, then lowest id).
+     */
     int pick_coordinator_id() const {
         int best_adult = -1;
         int best_any = -1;
@@ -57,6 +63,9 @@ struct GroupControl {
         return (best_adult >= 0) ? best_adult : best_any;
     }
 
+    /**
+     * @brief Begin a group step, resetting per-step coordination state.
+     */
     void begin_step(Step s) {
         std::unique_lock<std::mutex> lk(mu);
         current = s;
@@ -82,6 +91,9 @@ struct GroupControl {
         ferry_cv.notify_all();
     }
 
+    /**
+     * @brief Mark current member as done with the step.
+     */
     void mark_done() {
         std::unique_lock<std::mutex> lk(mu);
         completed++;
@@ -91,12 +103,18 @@ struct GroupControl {
         }
     }
 
+    /**
+     * @brief Block until all members finished the step.
+     */
     void wait_step_done() {
         std::unique_lock<std::mutex> lk(mu);
         cv.wait(lk, [&]{ return !step_active; });
     }
 
     // ---- Bridge gate ----
+    /**
+     * @brief Try to become bridge coordinator for this epoch.
+     */
     bool bridge_try_become_coordinator(int epoch, int tourist_id) {
         std::unique_lock<std::mutex> lk(mu);
         if (bridge_epoch_done >= epoch) return false;
@@ -106,6 +124,9 @@ struct GroupControl {
         return true;
     }
 
+    /**
+     * @brief Signal that bridge crossing is finished for this epoch.
+     */
     void bridge_finish(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         bridge_epoch_done = epoch;
@@ -113,12 +134,18 @@ struct GroupControl {
         bridge_cv.notify_all();
     }
 
+    /**
+     * @brief Wait until bridge epoch is completed by coordinator.
+     */
     void bridge_wait_done(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         bridge_cv.wait(lk, [&]{ return bridge_epoch_done >= epoch; });
     }
 
     // ---- Tower gate ----
+    /**
+     * @brief Try to become tower coordinator for this epoch.
+     */
     bool tower_try_become_coordinator(int epoch, int tourist_id) {
         std::unique_lock<std::mutex> lk(mu);
         if (tower_epoch_done >= epoch) return false;
@@ -128,6 +155,9 @@ struct GroupControl {
         return true;
     }
 
+    /**
+     * @brief Signal tower visit finished for this epoch.
+     */
     void tower_finish(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         tower_epoch_done = epoch;
@@ -135,12 +165,18 @@ struct GroupControl {
         tower_cv.notify_all();
     }
 
+    /**
+     * @brief Wait until tower epoch is completed by coordinator.
+     */
     void tower_wait_done(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         tower_cv.wait(lk, [&]{ return tower_epoch_done >= epoch; });
     }
 
     // ---- Ferry gate ----
+    /**
+     * @brief Try to become ferry coordinator for this epoch.
+     */
     bool ferry_try_become_coordinator(int epoch, int tourist_id) {
         std::unique_lock<std::mutex> lk(mu);
         if (ferry_epoch_done >= epoch) return false;
@@ -150,6 +186,9 @@ struct GroupControl {
         return true;
     }
 
+    /**
+     * @brief Signal ferry crossing finished for this epoch.
+     */
     void ferry_finish(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         ferry_epoch_done = epoch;
@@ -157,6 +196,9 @@ struct GroupControl {
         ferry_cv.notify_all();
     }
 
+    /**
+     * @brief Wait until ferry epoch is completed by coordinator.
+     */
     void ferry_wait_done(int epoch) {
         std::unique_lock<std::mutex> lk(mu);
         ferry_cv.wait(lk, [&]{ return ferry_epoch_done >= epoch; });

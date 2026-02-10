@@ -21,6 +21,9 @@
 
 /* ===================== helpers ===================== */
 
+/**
+ * @brief Return value of key=foo argument or nullptr if absent.
+ */
 static const char* get_arg(int argc, char** argv, const char* key) {
     size_t klen = std::strlen(key);
     for (int i = 1; i < argc; ++i)
@@ -29,10 +32,16 @@ static const char* get_arg(int argc, char** argv, const char* key) {
     return nullptr;
 }
 
+/**
+ * @brief Check if string starts with given prefix.
+ */
 static bool has_prefix(const char* s, const char* p) {
     return std::strncmp(s, p, std::strlen(p)) == 0;
 }
 
+/**
+ * @brief Parse non-negative integer flag with default fallback.
+ */
 static int parse_nonneg(int argc, char** argv, const char* key, int def) {
     const char* v = get_arg(argc, argv, key);
     if (!v) return def;
@@ -43,6 +52,9 @@ static int parse_nonneg(int argc, char** argv, const char* key, int def) {
     return (int)x;
 }
 
+/**
+ * @brief Build exec argv vector injecting --role/--id while preserving others.
+ */
 static std::vector<std::string> build_exec_args(
     const char* self, const char* role, int id, int argc, char** argv
 ) {
@@ -58,6 +70,9 @@ static std::vector<std::string> build_exec_args(
     return out;
 }
 
+/**
+ * @brief Convert vector of strings to execv argv format (null-terminated).
+ */
 static std::vector<char*> to_exec_argv(std::vector<std::string>& v) {
     std::vector<char*> r;
     r.reserve(v.size() + 1);
@@ -71,7 +86,9 @@ static std::vector<char*> to_exec_argv(std::vector<std::string>& v) {
 static volatile sig_atomic_t g_stop = 0;      // for servers (SIGTERM)
 static volatile sig_atomic_t g_evacuate = 0;  // for main (SIGUSR1/SIGINT)
 
+/** @brief SIGTERM handler for server processes. */
 static void sigterm_handler(int) { g_stop = 1; }
+/** @brief SIGUSR1/SIGINT handler triggering evacuation. */
 static void on_evacuate(int) { g_evacuate = 1; }
 
 /* ===================== FIFO logger ===================== */
@@ -79,6 +96,9 @@ static void on_evacuate(int) { g_evacuate = 1; }
 static const char* FIFO_PATH = "/tmp/park_sim.fifo";
 static const char* LOG_PATH  = "/tmp/park_simulation.log";
 
+/**
+ * @brief Write log line to FIFO (stderr fallback if FIFO absent).
+ */
 static void fifo_log(const char* tag, int id) {
     char buf[220];
     int n = std::snprintf(buf, sizeof(buf),
@@ -94,6 +114,9 @@ static void fifo_log(const char* tag, int id) {
     close(fd);
 }
 
+/**
+ * @brief Log server process: read FIFO and append to log file.
+ */
 static int run_log_server() {
     struct sigaction sa{};
     sa.sa_handler = sigterm_handler;
@@ -159,6 +182,9 @@ static const char* MSG_TOKEN     = "/tmp/park_sim.msgkey";
 
 /* ===================== MONITOR (pipe + dup2) ===================== */
 
+/**
+ * @brief Monitor process: counts spawn/wait/evac messages from stdin.
+ */
 static int run_monitor() {
     uint64_t spawned = 0, waited = 0, evac = 0;
     std::string line;
@@ -174,6 +200,9 @@ static int run_monitor() {
     return 0;
 }
 
+/**
+ * @brief Send a line to monitor pipe (appends newline if missing).
+ */
 static void monitor_send(int fd, const std::string& s) {
     if (fd < 0) return;
     std::string msg = s;
@@ -183,6 +212,9 @@ static void monitor_send(int fd, const std::string& s) {
 
 /* ===================== bridge ===================== */
 
+/**
+ * @brief Bridge server loop: receive crossing requests, update stats, reply done.
+ */
 static int run_bridge() {
     struct sigaction sa{};
     sa.sa_handler = sigterm_handler;
@@ -227,6 +259,9 @@ static int run_bridge() {
 
 /* ===================== tourist / guide ===================== */
 
+/**
+ * @brief Tourist child process: enters park, requests bridge, exits; updates stats.
+ */
 static int run_tourist(int id) {
     SysVSemaphore cap, mtx;
     SysVSharedMemory shm;
@@ -262,6 +297,9 @@ static int run_tourist(int id) {
     return 0;
 }
 
+/**
+ * @brief Guide child process placeholder (just logs and sleeps).
+ */
 static int run_guide(int id) {
     fifo_log("guide", id);
     usleep(200000);
@@ -280,6 +318,9 @@ union semun {
 #define SEMUN_DEFINED 1
 #endif
 
+/**
+ * @brief Deterministically set a semaphore value.
+ */
 static int sem_setval(int semid, int value) {
     union semun u;
     u.val = value;
@@ -290,12 +331,18 @@ static int sem_setval(int semid, int value) {
     return 0;
 }
 
+/**
+ * @brief Kill pid if positive (safety helper).
+ */
 static void safe_kill(pid_t p, int sig) {
     if (p > 0) kill(p, sig);
 }
 
 /* ===================== MAIN ===================== */
 
+/**
+ * @brief Entry: parse args, set up SysV IPC, fork roles, wait, print stats, cleanup.
+ */
 int main(int argc, char** argv) {
     const char* role = get_arg(argc, argv, "--role");
     const char* id_s = get_arg(argc, argv, "--id");
@@ -512,4 +559,3 @@ int main(int argc, char** argv) {
     std::cout << "[MAIN] done. log=" << LOG_PATH << "\n";
     return 0;
 }
-

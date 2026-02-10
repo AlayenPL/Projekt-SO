@@ -8,25 +8,40 @@
 #include <sstream>
 #include <thread>
 
+/**
+ * @brief Construct park with resources initialized from config and logger.
+ */
 Park::Park(const Config& cfg_, Logger& log_)
     : cfg(cfg_), log(log_), bridge(cfg.X1, log_), tower(cfg.X2, log_), ferry(cfg.X3, log_), rng(cfg.seed) {}
 
+/**
+ * @brief Thread-safe uniform integer.
+ */
 int Park::rand_int(int lo, int hi) {
     std::lock_guard<std::mutex> lk(rng_mu);
     std::uniform_int_distribution<int> dist(lo, hi);
     return dist(rng);
 }
 
+/**
+ * @brief Thread-safe uniform double in [0,1).
+ */
 double Park::rand01() {
     std::lock_guard<std::mutex> lk(rng_mu);
     std::uniform_real_distribution<double> dist(0.0, 1.0);
     return dist(rng);
 }
 
+/**
+ * @brief Map route number to direction choice for forward/backward legs.
+ */
 static Direction dir_from_route(int route, Direction d_for_route1, Direction d_for_route2) {
     return (route == 1) ? d_for_route1 : d_for_route2;
 }
 
+/**
+ * @brief Sleep in slices while checking abort flag.
+ */
 static void sleep_interruptible_ms(int total_ms, std::atomic<bool>& abort_flag) {
     int slice = 50;
     int slept = 0;
@@ -38,6 +53,9 @@ static void sleep_interruptible_ms(int total_ms, std::atomic<bool>& abort_flag) 
     }
 }
 
+/**
+ * @brief Execute one simulation step for a guided tourist, handling group coordination and constraints.
+ */
 void Park::do_step(Tourist* t, Step s, int epoch) {
     auto deny_no_guard_for = [&](Tourist* who, const char* where) {
         log.log_ts("GUARD",
@@ -223,6 +241,9 @@ void Park::do_step(Tourist* t, Step s, int epoch) {
     }
 }
 
+/**
+ * @brief Start cashier and guide threads.
+ */
 void Park::start() {
     cashier_thr = std::thread(&Park::cashier_loop, this);
     for (int i = 0; i < cfg.P; ++i) {
@@ -230,6 +251,9 @@ void Park::start() {
     }
 }
 
+/**
+ * @brief Stop simulation, wake queues, and join threads.
+ */
 void Park::stop() {
     open.store(false);
     entry_cv.notify_all();
@@ -246,6 +270,9 @@ void Park::stop() {
     for (auto& t : guide_thrs) if (t.joinable()) t.join();
 }
 
+/**
+ * @brief Enqueue tourist for cashier entry with VIP priority.
+ */
 void Park::enqueue_entry(Tourist* t) {
     {
         std::lock_guard<std::mutex> lk(entry_mu);
@@ -255,6 +282,9 @@ void Park::enqueue_entry(Tourist* t) {
     entry_cv.notify_one();
 }
 
+/**
+ * @brief Dequeue next tourist for cashier; blocks until available or park closed.
+ */
 Tourist* Park::dequeue_for_cashier() {
     std::unique_lock<std::mutex> lk(entry_mu);
     entry_cv.wait(lk, [&]{
@@ -274,6 +304,9 @@ Tourist* Park::dequeue_for_cashier() {
     return nullptr;
 }
 
+/**
+ * @brief Enqueue tourist waiting to form a guided group.
+ */
 void Park::enqueue_group_wait(Tourist* t) {
     {
         std::lock_guard<std::mutex> lk(group_mu);
@@ -282,6 +315,9 @@ void Park::enqueue_group_wait(Tourist* t) {
     group_cv.notify_one();
 }
 
+/**
+ * @brief Dequeue exactly M tourists to form a group; blocks until enough.
+ */
 std::vector<Tourist*> Park::dequeue_group(int M) {
     std::unique_lock<std::mutex> lk(group_mu);
     group_cv.wait(lk, [&]{
@@ -298,6 +334,9 @@ std::vector<Tourist*> Park::dequeue_group(int M) {
     return g;
 }
 
+/**
+ * @brief Report tourist exit to cashier logger.
+ */
 void Park::report_exit(int tourist_id) {
     {
         std::lock_guard<std::mutex> lk(exit_mu);
@@ -306,6 +345,9 @@ void Park::report_exit(int tourist_id) {
     exit_cv.notify_one();
 }
 
+/**
+ * @brief Cashier thread loop controlling entry limit N and logging exits.
+ */
 void Park::cashier_loop() {
     log.log_ts("CASHIER", "START");
 
@@ -354,6 +396,9 @@ void Park::cashier_loop() {
     log.log_ts("CASHIER", "STOP");
 }
 
+/**
+ * @brief Guide thread loop forming groups, assigning guardians, driving routes.
+ */
 void Park::guide_loop(int guide_id) {
     int group_seq = 0;
     log.log_ts("GUIDE", "START guide=" + std::to_string(guide_id));
