@@ -25,6 +25,8 @@ struct Park {
 
     std::atomic<bool> open{true};
     std::atomic<int> entered{0};
+    std::atomic<int> exited{0};
+    std::atomic<int> enqueued{0};
 
     // Cashier entry queues (VIP has priority).
     std::mutex entry_mu;
@@ -64,6 +66,10 @@ struct Park {
      * @brief Stop simulation threads and wake any waiting queues.
      */
     void stop();
+    /**
+     * @brief Close entry to park (no new arrivals); wake waiters.
+     */
+    void close();
 
     // Random helpers
     /**

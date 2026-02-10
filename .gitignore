@@ -1,2 +1,4 @@
 sim
 park_sim
+logs/
+*.log

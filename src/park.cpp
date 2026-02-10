@@ -255,19 +255,17 @@ void Park::start() {
  * @brief Stop simulation, wake queues, and join threads.
  */
 void Park::stop() {
+    close();
+
+    if (cashier_thr.joinable()) cashier_thr.join();
+    for (auto& t : guide_thrs) if (t.joinable()) t.join();
+}
+
+void Park::close() {
     open.store(false);
     entry_cv.notify_all();
     group_cv.notify_all();
     exit_cv.notify_all();
-
-    {
-        std::lock_guard<std::mutex> lk(group_mu);
-        for (auto* t : group_wait) t->on_rejected();
-        group_wait.clear();
-    }
-
-    if (cashier_thr.joinable()) cashier_thr.join();
-    for (auto& t : guide_thrs) if (t.joinable()) t.join();
 }
 
 /**
@@ -279,6 +277,7 @@ void Park::enqueue_entry(Tourist* t) {
         if (t->vip) entry_vip.push_back(t);
         else entry_norm.push_back(t);
     }
+    enqueued.fetch_add(1);
     entry_cv.notify_one();
 }
 
@@ -325,7 +324,16 @@ std::vector<Tourist*> Park::dequeue_group(int M) {
     });
 
     std::vector<Tourist*> g;
-    if (static_cast<int>(group_wait.size()) < M) return g;
+    if (static_cast<int>(group_wait.size()) < M) {
+        if (!open.load()) {
+            // final partial group when park closed
+            while (!group_wait.empty()) {
+                g.push_back(group_wait.front());
+                group_wait.pop_front();
+            }
+        }
+        return g;
+    }
 
     for (int i = 0; i < M; ++i) {
         g.push_back(group_wait.front());
@@ -342,6 +350,7 @@ void Park::report_exit(int tourist_id) {
         std::lock_guard<std::mutex> lk(exit_mu);
         exit_ids.push_back(tourist_id);
     }
+    exited.fetch_add(1);
     exit_cv.notify_one();
 }
 
@@ -351,7 +360,7 @@ void Park::report_exit(int tourist_id) {
 void Park::cashier_loop() {
     log.log_ts("CASHIER", "START");
 
-    while (open.load()) {
+    while (open.load() || !entry_vip.empty() || !entry_norm.empty()) {
         Tourist* t = dequeue_for_cashier();
         if (!t) continue;
 
@@ -403,9 +412,12 @@ void Park::guide_loop(int guide_id) {
     int group_seq = 0;
     log.log_ts("GUIDE", "START guide=" + std::to_string(guide_id));
 
-    while (open.load()) {
+    while (true) {
         auto members = dequeue_group(cfg.M);
-        if (members.empty()) continue;
+        if (members.empty()) {
+            if (!open.load()) break;
+            continue;
+        }
 
         int gid = guide_id * 100000 + group_seq++;
 
